@@ -19,10 +19,11 @@ const { signUpWithEmailAndPassword } = require('voult-sdk');
 
 app.post('/signup-email', async (req, res) => {
     console.log(req.body);
-    const { email, password } = req.body;
-    const { user, token } = await signUpWithEmailAndPassword(email, password, {
-      client
-    });
+    const { email, password, fullName } = req.body;
+    const { user, token } = await signUpWithEmailAndPassword(email, password, 
+        { fullName }, 
+        client
+    );
     res.json({ user, token });
 });
 
