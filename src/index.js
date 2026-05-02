@@ -9,36 +9,10 @@ app.use(express.urlencoded({
 }));
 
 const signinRoutes = require('./routes/signin');
+const signupRoutes = require('./routes/signup');
+
 app.use('/signin', signinRoutes);
-
-const {VoultClient} = require('voult-sdk');
-const client = new VoultClient({
-  clientId: process.env.CLIENT_ID,
-  clientSecret: process.env.CLIENT_SECRET,
-  baseURL: process.env.BASE_URL || 'http://localhost:3000'
-});
-
-const { signUpWithEmailAndPassword,signUpWithUsernameAndPassword } = require('voult-sdk');
-
-app.post('/signup-email', async (req, res) => {
-    console.log(req.body);
-    const { email, password, fullName } = req.body;
-    const { user, token } = await signUpWithEmailAndPassword(email, password, 
-        { fullName }, 
-        client
-    );
-    res.json({ user, token });
-});
-
-app.post('/signup-username', async (req, res) => {
-    console.log(req.body);
-    const { username, password, fullName, email} = req.body;
-    const { user, token } = await signUpWithUsernameAndPassword(username, password,
-        { fullName, email }, 
-        client
-    );
-    res.json({ user, token });
-});
+app.use('/signup', signupRoutes);
 
 const port = process.env.port || 2000;
 app.listen(port, () => {
