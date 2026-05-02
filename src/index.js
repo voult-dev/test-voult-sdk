@@ -8,8 +8,8 @@ app.use(express.urlencoded({
   limit : '10kb'
 }));
 
-const signinRoutes = require('./routes/signin');
-const signupRoutes = require('./routes/signup');
+const signinRoutes = require('../routes/signin');
+const signupRoutes = require('../routes/signup');
 
 app.use('/signin', signinRoutes);
 app.use('/signup', signupRoutes);
