@@ -25,7 +25,7 @@ module.exports.signInWithEmailLink = async(req, res) =>{
     await signInWithEmailLink(
         email,
         {redirectUri},
-        client
+        clien
     );
 
     res.json({
