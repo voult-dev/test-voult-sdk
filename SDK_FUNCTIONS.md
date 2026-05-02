@@ -16,9 +16,10 @@ Complete reference of all functions available in the Voult SDK for testing and d
 
 ---
 
-## 📦 Core Client
+##  Core Client
 
 ### `VoultClient`
+
 The main HTTP client class for interacting with the Voult API.
 
 ```javascript
@@ -32,13 +33,17 @@ const client = new VoultClient({
 ```
 
 **Configuration Options:**
-| Option | Type | Required | Description |
-|--------|------|----------|-------------|
-| `clientId` | string | Yes | Your application's client ID from Voult dashboard |
-| `clientSecret` | string | Yes | Your application's client secret |
-| `baseURL` | string | No | API base URL (defaults to `https://api.voult.dev`) |
+
+
+| Option         | Type   | Required | Description                                        |
+| -------------- | ------ | -------- | -------------------------------------------------- |
+| `clientId`     | string | Yes      | Your application's client ID from Voult dashboard  |
+| `clientSecret` | string | Yes      | Your application's client secret                   |
+| `baseURL`      | string | No       | API base URL (defaults to `https://api.voult.dev`) |
+
 
 **Instance Methods:**
+
 - `setSession(user, accessToken, refreshToken)` - Store user session
 - `clearSession()` - Clear user session
 - `isAuthenticated()` - Check if user is logged in
@@ -46,9 +51,10 @@ const client = new VoultClient({
 
 ---
 
-## 🔐 Password Authentication - Sign Up
+##  Password Authentication - Sign Up
 
 ### `signUpWithEmailAndPassword(email, password, options, client)`
+
 Register a new user with email and password.
 
 ```javascript
@@ -63,15 +69,20 @@ const { user, token } = await signUpWithEmailAndPassword(
 ```
 
 **Parameters:**
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `email` | string | Yes | User's email address |
-| `password` | string | Yes | User's password (must meet complexity requirements) |
-| `options` | object | No | Optional parameters |
-| `options.fullName` | string | No | User's full name |
-| `client` | VoultClient | Yes | The Voult client instance |
+
+
+| Parameter          | Type        | Required | Description                                                  |
+| ------------------ | ----------- | -------- | ------------------------------------------------------------ |
+| `email`            | string      | Yes      | User's email address                                         |
+| `password`         | string      | Yes      | User's password (must meet complexity requirements)          |
+| `options`          | object      | No       | Optional parameters                                          |
+| `options.fullName` | string      | No       | User's full name                                             |
+| `options.username` | string      | No       | Optional username (3-30 chars, alphanumeric and underscores) |
+| `client`           | VoultClient | Yes      | The Voult client instance                                    |
+
 
 **Returns:**
+
 ```javascript
 {
   user: { id, email },
@@ -80,7 +91,19 @@ const { user, token } = await signUpWithEmailAndPassword(
 }
 ```
 
+**How It Works:**
+
+1. Validates email format (normalizes to lowercase, checks regex)
+2. Validates password meets requirements (min 8 chars, uppercase, lowercase, number, special char)
+3. Validates fullName if provided (cannot be empty)
+4. Validates username if provided (3-30 chars, alphanumeric and underscores only)
+5. Sends POST request to `/api/auth/register` with { email, password, ...optionalFields }
+6. On success: extracts user and token from response
+7. Calls `client.setSession(user, token, null)` to store session
+8. Returns { user, token, message }
+
 **Errors:**
+
 - `ValidationError` - Invalid email or weak password
 - `ConflictError` - User with email already exists
 - `AuthenticationError` - Registration failed
@@ -88,7 +111,8 @@ const { user, token } = await signUpWithEmailAndPassword(
 ---
 
 ### `signUpWithUsernameAndPassword(username, password, options, client)`
-Register a new user with username and password (requires email in options).
+
+Register a new user with username and password.
 
 ```javascript
 import { signUpWithUsernameAndPassword } from 'voult-sdk';
@@ -102,29 +126,45 @@ const { user, token } = await signUpWithUsernameAndPassword(
 ```
 
 **Parameters:**
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `username` | string | Yes | User's username |
-| `password` | string | Yes | User's password |
-| `options` | object | Yes | Options object |
-| `options.email` | string | Yes | User's email address |
-| `options.fullName` | string | No | User's full name |
-| `client` | VoultClient | Yes | The Voult client instance |
+
+
+| Parameter          | Type        | Required | Description                                                |
+| ------------------ | ----------- | -------- | ---------------------------------------------------------- |
+| `username`         | string      | Yes      | User's username (3-30 chars, alphanumeric and underscores) |
+| `password`         | string      | Yes      | User's password (must meet complexity requirements)        |
+| `options`          | object      | No       | Optional parameters                                        |
+| `options.fullName` | string      | No       | User's full name                                           |
+| `options.email`    | string      | No       | Optional email address                                     |
+| `client`           | VoultClient | Yes      | The Voult client instance                                  |
+
 
 **Returns:**
+
 ```javascript
 {
-  user: { id, email },
+  user: { id, username },
   token: string,
   message: string
 }
 ```
 
+**How It Works:**
+
+1. Validates username format (3-30 chars, alphanumeric and underscores only, normalizes to lowercase)
+2. Validates password meets requirements (min 8 chars, uppercase, lowercase, number, special char)
+3. Validates fullName if provided (cannot be empty)
+4. Validates email if provided (normalizes to lowercase, checks regex)
+5. Sends POST request to `/api/auth/username-register` with { username, password, ...optionalFields }
+6. On success: extracts user and token from response
+7. Calls `client.setSession(user, token, null)` to store session
+8. Returns { user, token, message }
+
 ---
 
-## 🔓 Password Authentication - Sign In
+##  Password Authentication - Sign In
 
 ### `signInWithEmailAndPassword(email, password, client)`
+
 Authenticate with email and password.
 
 ```javascript
@@ -138,13 +178,17 @@ const { user, accessToken, refreshToken } = await signInWithEmailAndPassword(
 ```
 
 **Parameters:**
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `email` | string | Yes | User's email address |
-| `password` | string | Yes | User's password |
-| `client` | VoultClient | Yes | The Voult client instance |
+
+
+| Parameter  | Type        | Required | Description               |
+| ---------- | ----------- | -------- | ------------------------- |
+| `email`    | string      | Yes      | User's email address      |
+| `password` | string      | Yes      | User's password           |
+| `client`   | VoultClient | Yes      | The Voult client instance |
+
 
 **Returns:**
+
 ```javascript
 {
   user: { id, email },
@@ -154,7 +198,17 @@ const { user, accessToken, refreshToken } = await signInWithEmailAndPassword(
 }
 ```
 
+**How It Works:**
+
+1. Validates email format (normalizes to lowercase, checks regex)
+2. Validates password meets requirements (min 8 chars, uppercase, lowercase, number, special char)
+3. Sends POST request to `/api/auth/email-login` with { email, password }
+4. On success: extracts user, accessToken, refreshToken from response
+5. Calls `client.setSession(user, accessToken, refreshToken)` to store session
+6. Returns { user, accessToken, refreshToken, message }
+
 **Errors:**
+
 - `ValidationError` - Invalid email or password format
 - `AuthenticationError` - Invalid credentials
 - `AuthorizationError` - Email not verified or account disabled
@@ -163,26 +217,31 @@ const { user, accessToken, refreshToken } = await signInWithEmailAndPassword(
 ---
 
 ### `signInWithUsernameAndPassword(username, password, client)`
-Authenticate with username and password (username must be email format).
+
+Authenticate with username and password.
 
 ```javascript
 import { signInWithUsernameAndPassword } from 'voult-sdk';
 
 const { user, accessToken } = await signInWithUsernameAndPassword(
-  'user@example.com',
+  'john_doe',
   'StrongPass123!',
   client
 );
 ```
 
 **Parameters:**
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `username` | string | Yes | User's username (must be email format) |
-| `password` | string | Yes | User's password |
-| `client` | VoultClient | Yes | The Voult client instance |
+
+
+| Parameter  | Type        | Required | Description                                                |
+| ---------- | ----------- | -------- | ---------------------------------------------------------- |
+| `username` | string      | Yes      | User's username (3-30 chars, alphanumeric and underscores) |
+| `password` | string      | Yes      | User's password                                            |
+| `client`   | VoultClient | Yes      | The Voult client instance                                  |
+
 
 **Returns:**
+
 ```javascript
 {
   user: { id, email },
@@ -192,11 +251,19 @@ const { user, accessToken } = await signInWithUsernameAndPassword(
 }
 ```
 
----
+**How It Works:**
 
-## ✨ Passwordless Authentication - Magic Link
+1. Validates username format (3-30 chars, alphanumeric and underscores only, normalizes to lowercase)
+2. Validates password meets requirements (min 8 chars, uppercase, lowercase, number, special char)
+3. Sends POST request to `/api/auth/username-login` with { username, password }
+4. On success: extracts user, accessToken, refreshToken from response
+5. Calls `client.setSession(user, accessToken, refreshToken)` to store session
+6. Returns { user, accessToken, refreshToken, message }
+
+##  Passwordless Authentication - Magic Link
 
 ### `signInWithEmailLink(email, options, client)`
+
 Send a magic link to the user's email.
 
 ```javascript
@@ -210,14 +277,18 @@ await signInWithEmailLink(
 ```
 
 **Parameters:**
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `email` | string | Yes | User's email address |
-| `options` | object | Yes | Options object |
-| `options.redirectUri` | string | Yes | URL where user is redirected after clicking link |
-| `client` | VoultClient | Yes | The Voult client instance |
+
+
+| Parameter             | Type        | Required | Description                                      |
+| --------------------- | ----------- | -------- | ------------------------------------------------ |
+| `email`               | string      | Yes      | User's email address                             |
+| `options`             | object      | Yes      | Options object                                   |
+| `options.redirectUri` | string      | Yes      | URL where user is redirected after clicking link |
+| `client`              | VoultClient | Yes      | The Voult client instance                        |
+
 
 **Returns:**
+
 ```javascript
 {
   success: boolean,
@@ -228,6 +299,7 @@ await signInWithEmailLink(
 ---
 
 ### `verifyEmailLink(token, client)`
+
 Verify a magic link token and complete authentication.
 
 ```javascript
@@ -239,12 +311,16 @@ const { user, accessToken, refreshToken } = await verifyEmailLink(token, client)
 ```
 
 **Parameters:**
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `token` | string | Yes | The magic link token from URL |
-| `client` | VoultClient | Yes | The Voult client instance |
+
+
+| Parameter | Type        | Required | Description                   |
+| --------- | ----------- | -------- | ----------------------------- |
+| `token`   | string      | Yes      | The magic link token from URL |
+| `client`  | VoultClient | Yes      | The Voult client instance     |
+
 
 **Returns:**
+
 ```javascript
 {
   user: { id, email, fullName, isEmailVerified },
@@ -260,6 +336,7 @@ const { user, accessToken, refreshToken } = await verifyEmailLink(token, client)
 ## 👤 Session Management
 
 ### `getCurrentUser(client)`
+
 Get the current authenticated user's profile.
 
 ```javascript
@@ -270,11 +347,15 @@ console.log(profile.email, profile.fullName, profile.isEmailVerified);
 ```
 
 **Parameters:**
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `client` | VoultClient | Yes | The Voult client instance |
+
+
+| Parameter | Type        | Required | Description               |
+| --------- | ----------- | -------- | ------------------------- |
+| `client`  | VoultClient | Yes      | The Voult client instance |
+
 
 **Returns:**
+
 ```javascript
 {
   id: string,
@@ -290,6 +371,7 @@ console.log(profile.email, profile.fullName, profile.isEmailVerified);
 ---
 
 ### `signOut(client)`
+
 Log out the current user and clear session.
 
 ```javascript
@@ -299,11 +381,15 @@ await signOut(client);
 ```
 
 **Parameters:**
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `client` | VoultClient | Yes | The Voult client instance |
+
+
+| Parameter | Type        | Required | Description               |
+| --------- | ----------- | -------- | ------------------------- |
+| `client`  | VoultClient | Yes      | The Voult client instance |
+
 
 **Returns:**
+
 ```javascript
 {
   success: boolean,
@@ -314,6 +400,7 @@ await signOut(client);
 ---
 
 ### `deleteUser(client)`
+
 Delete/disable the current user's account.
 
 ```javascript
@@ -323,11 +410,15 @@ await deleteUser(client);
 ```
 
 **Parameters:**
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `client` | VoultClient | Yes | The Voult client instance |
+
+
+| Parameter | Type        | Required | Description               |
+| --------- | ----------- | -------- | ------------------------- |
+| `client`  | VoultClient | Yes      | The Voult client instance |
+
 
 **Returns:**
+
 ```javascript
 {
   success: boolean,
@@ -337,9 +428,10 @@ await deleteUser(client);
 
 ---
 
-## ✅ Validation Utilities
+## Validation Utilities
 
 ### `isValidEmail(email)`
+
 Check if an email is valid.
 
 ```javascript
@@ -350,15 +442,19 @@ console.log(isValidEmail('invalid')); // false
 ```
 
 **Parameters:**
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `email` | string | Email to validate |
+
+
+| Parameter | Type   | Description       |
+| --------- | ------ | ----------------- |
+| `email`   | string | Email to validate |
+
 
 **Returns:** `boolean`
 
 ---
 
 ### `isValidPassword(password)`
+
 Check if a password meets requirements.
 
 ```javascript
@@ -369,15 +465,19 @@ console.log(isValidPassword('weak')); // false
 ```
 
 **Parameters:**
-| Parameter | Type | Description |
-|-----------|------|-------------|
+
+
+| Parameter  | Type   | Description          |
+| ---------- | ------ | -------------------- |
 | `password` | string | Password to validate |
+
 
 **Returns:** `boolean`
 
 ---
 
 ### `PASSWORD_REQUIREMENTS_MESSAGE`
+
 The password requirements message constant.
 
 ```javascript
@@ -389,7 +489,7 @@ console.log(PASSWORD_REQUIREMENTS_MESSAGE);
 
 ---
 
-## ❌ Error Classes
+##  Error Classes
 
 ### Available Error Classes
 
@@ -405,17 +505,20 @@ import {
 } from 'voult-sdk';
 ```
 
-| Error Class | HTTP Status | Description |
-|-------------|-------------|-------------|
-| `VoultError` | - | Base error class for all Voult errors |
-| `ValidationError` | 400 | Invalid input (email, password, etc.) |
-| `AuthenticationError` | 401 | Invalid credentials |
-| `AuthorizationError` | 403 | Email not verified or account disabled |
-| `ConflictError` | 409 | User already exists |
-| `AccountLockedError` | 423 | Too many failed login attempts |
-| `NetworkError` | - | Network connection failed |
+
+| Error Class           | HTTP Status | Description                            |
+| --------------------- | ----------- | -------------------------------------- |
+| `VoultError`          | -           | Base error class for all Voult errors  |
+| `ValidationError`     | 400         | Invalid input (email, password, etc.)  |
+| `AuthenticationError` | 401         | Invalid credentials                    |
+| `AuthorizationError`  | 403         | Email not verified or account disabled |
+| `ConflictError`       | 409         | User already exists                    |
+| `AccountLockedError`  | 423         | Too many failed login attempts         |
+| `NetworkError`        | -           | Network connection failed              |
+
 
 **Example Usage:**
+
 ```javascript
 try {
   await signInWithEmailAndPassword('invalid', 'weak', client);
@@ -466,21 +569,23 @@ auth.VERSION         // SDK version
 
 Use this checklist to verify all SDK functions work correctly:
 
-| Function | Description | Test Status |
-|----------|-------------|-------------|
-| `VoultClient` | Create client instance | ⬜ |
-| `signUpWithEmailAndPassword` | Register with email | ⬜ |
-| `signUpWithUsernameAndPassword` | Register with username | ⬜ |
-| `signInWithEmailAndPassword` | Login with email | ⬜ |
-| `signInWithUsernameAndPassword` | Login with username | ⬜ |
-| `signInWithEmailLink` | Send magic link | ⬜ |
-| `verifyEmailLink` | Verify magic link | ⬜ |
-| `getCurrentUser` | Get user profile | ⬜ |
-| `signOut` | Logout user | ⬜ |
-| `deleteUser` | Delete account | ⬜ |
-| `isValidEmail` | Validate email | ⬜ |
-| `isValidPassword` | Validate password | ⬜ |
-| Error classes | Test error handling | ⬜ |
+
+| Function                        | Description            | Test Status |
+| ------------------------------- | ---------------------- | ----------- |
+| `VoultClient`                   | Create client instance | ⬜           |
+| `signUpWithEmailAndPassword`    | Register with email    | ⬜           |
+| `signUpWithUsernameAndPassword` | Register with username | ⬜           |
+| `signInWithEmailAndPassword`    | Login with email       | ⬜           |
+| `signInWithUsernameAndPassword` | Login with username    | ⬜           |
+| `signInWithEmailLink`           | Send magic link        | ⬜           |
+| `verifyEmailLink`               | Verify magic link      | ⬜           |
+| `getCurrentUser`                | Get user profile       | ⬜           |
+| `signOut`                       | Logout user            | ⬜           |
+| `deleteUser`                    | Delete account         | ⬜           |
+| `isValidEmail`                  | Validate email         | ⬜           |
+| `isValidPassword`               | Validate password      | ⬜           |
+| Error classes                   | Test error handling    | ⬜           |
+
 
 ---
 
@@ -491,3 +596,4 @@ Use this checklist to verify all SDK functions work correctly:
 - [SDK_DEVELOPMENT_GUIDE.md](./SDK_DEVELOPMENT_GUIDE.md) - Development guide
 - [GitHub Repository](https://github.com/DevOlabode/voult-sdk) - Source code
 - [Voult API Repository](https://github.com/DevOlabode/voult) - Backend API
+
