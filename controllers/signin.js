@@ -1,5 +1,5 @@
 const client = require('../config/client');
-const { signInWithEmailAndPassword,signInWithUsernameAndPassword } = require('voult-sdk');
+const { signInWithEmailAndPassword,signInWithUsernameAndPassword, signInWithEmailLink } = require('voult-sdk');
 
 module.exports.signinWithEmailAndPassword = async (req, res) => {
     console.log(req.body);
@@ -18,3 +18,17 @@ module.exports.signinWithUsernameAndPassword = async (req, res) => {
             token 
         });
 };
+
+module.exports.signInWithEmailLink = async(req, res) =>{
+    console.log(req.body);
+    const {email, redirectUri} = req.body;
+    await signInWithEmailLink(
+        email,
+        {redirectUri},
+        client
+    );
+
+    res.json({
+        message : "Magic Link Sent Successfully to your email"
+    });
+}
