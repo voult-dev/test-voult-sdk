@@ -1,1 +1,3 @@
 - Error Message not matching the issue (Improve the error message)
+- DB issue
+- Enhance security when a developer when to rotate secret.
