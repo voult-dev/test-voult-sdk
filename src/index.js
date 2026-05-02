@@ -15,13 +15,23 @@ const client = new VoultClient({
   baseURL: process.env.BASE_URL || 'http://localhost:3000'
 });
 
-const { signUpWithEmailAndPassword } = require('voult-sdk');
+const { signUpWithEmailAndPassword,signUpWithUsernameAndPassword } = require('voult-sdk');
 
 app.post('/signup-email', async (req, res) => {
     console.log(req.body);
     const { email, password, fullName } = req.body;
     const { user, token } = await signUpWithEmailAndPassword(email, password, 
         { fullName }, 
+        client
+    );
+    res.json({ user, token });
+});
+
+app.post('/signup-username', async (req, res) => {
+    console.log(req.body);
+    const { username, password, fullName, email} = req.body;
+    const { user, token } = await signUpWithUsernameAndPassword(username, password,
+        { fullName, email }, 
         client
     );
     res.json({ user, token });
