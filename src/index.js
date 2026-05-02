@@ -8,6 +8,9 @@ app.use(express.urlencoded({
   limit : '10kb'
 }));
 
+const signinRoutes = require('./routes/signin');
+app.use('/signin', signinRoutes);
+
 const {VoultClient} = require('voult-sdk');
 const client = new VoultClient({
   clientId: process.env.CLIENT_ID,
