@@ -10,9 +10,11 @@ app.use(express.urlencoded({
 
 const signinRoutes = require('../routes/signin');
 const signupRoutes = require('../routes/signup');
+const userRoutes = require('../routes/user')
 
 app.use('/signin', signinRoutes);
 app.use('/signup', signupRoutes);
+app.use('/', userRoutes);
 
 const port = process.env.port || 2000;
 app.listen(port, () => {
