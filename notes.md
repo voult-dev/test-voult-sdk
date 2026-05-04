@@ -7,4 +7,4 @@
 
 - the magic link feature does not work prefectly
 
-- 
+- the logout feature is not working perfectly.
