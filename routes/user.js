@@ -9,4 +9,6 @@ router.get('/profile', catchAsync(controller.profile));
 
 router.post('/logout', catchAsync(controller.logout));
 
+router.post('/delete-user', catchAsync(controller.deleteAcct));
+
 module.exports = router;
