@@ -7,4 +7,6 @@ const catchAsync = require('../utils/catchAsync');
 
 router.get('/profile', catchAsync(controller.profile));
 
+router.post('/logout', catchAsync(controller.logout));
+
 module.exports = router;
