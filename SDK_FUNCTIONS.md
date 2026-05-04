@@ -16,7 +16,7 @@ Complete reference of all functions available in the Voult SDK for testing and d
 
 ---
 
-##  Core Client
+## Core Client
 
 ### `VoultClient`
 
@@ -51,7 +51,7 @@ const client = new VoultClient({
 
 ---
 
-##  Password Authentication - Sign Up
+## Password Authentication - Sign Up
 
 ### `signUpWithEmailAndPassword(email, password, options, client)`
 
@@ -161,7 +161,7 @@ const { user, token } = await signUpWithUsernameAndPassword(
 
 ---
 
-##  Password Authentication - Sign In
+## Password Authentication - Sign In
 
 ### `signInWithEmailAndPassword(email, password, client)`
 
@@ -260,7 +260,7 @@ const { user, accessToken } = await signInWithUsernameAndPassword(
 5. Calls `client.setSession(user, accessToken, refreshToken)` to store session
 6. Returns { user, accessToken, refreshToken, message }
 
-##  Passwordless Authentication - Magic Link
+## Passwordless Authentication - Magic Link
 
 ### `signInWithEmailLink(email, options, client)`
 
@@ -489,7 +489,7 @@ console.log(PASSWORD_REQUIREMENTS_MESSAGE);
 
 ---
 
-##  Error Classes
+## Error Classes
 
 ### Available Error Classes
 
