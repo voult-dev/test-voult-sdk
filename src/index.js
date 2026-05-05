@@ -65,7 +65,11 @@ app.use((err, req, res, next)=>{
   if(!err.message){
       err.message = 'Something Went Wrong!'
   }
-  res.status(statusCode).render('error', {err, title : "Error Page"})
+  res.status(statusCode).render('error', {
+    err,
+    title: statusCode === 404 ? 'Page not found' : 'Error',
+    req,
+  })
 });
 
 const port = process.env.port || 2000;
