@@ -1,0 +1,69 @@
+<% layout('layout/boilerplate.ejs') %>
+
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-10">
+      <h1 class="h2 mb-2">Voult SDK playground</h1>
+      <p class="lead text-secondary mb-4">
+        Exercise <code>voult-sdk</code> flows before publishing: register, sign in, magic link, profile (<code>getCurrentUser</code>), sign out, and account disable (<code>deleteUser</code>).
+      </p>
+
+      <% if (sessionUser) { %>
+        <div class="alert alert-success d-flex align-items-center gap-2" role="status">
+          <i class="fa-solid fa-circle-check"></i>
+          <span>Session has stored user data. Open <a href="/voult/account">Account</a> to call <code>GET /api/user/me</code> via the SDK.</span>
+        </div>
+      <% } else { %>
+        <div class="alert alert-secondary" role="status">
+          No Voult tokens in this browser session yet. Use Sign up or Sign in below.
+        </div>
+      <% } %>
+
+      <div class="row g-3 mt-2">
+        <div class="col-md-6">
+          <div class="card voult-card h-100">
+            <div class="card-body">
+              <h2 class="h5 card-title">Sign up</h2>
+              <p class="card-text text-secondary small">signUpWithEmailAndPassword · signUpWithUsernameAndPassword</p>
+              <a class="btn btn-primary btn-sm" href="/voult/signup/email">Email + password</a>
+              <a class="btn btn-outline-primary btn-sm ms-1" href="/voult/signup/username">Username + password</a>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="card voult-card h-100">
+            <div class="card-body">
+              <h2 class="h5 card-title">Sign in</h2>
+              <p class="card-text text-secondary small">signInWithEmailAndPassword · signInWithUsernameAndPassword · signInWithEmailLink</p>
+              <a class="btn btn-dark btn-sm" href="/voult/signin/email">Email</a>
+              <a class="btn btn-outline-dark btn-sm ms-1" href="/voult/signin/username">Username</a>
+              <a class="btn btn-outline-secondary btn-sm ms-1" href="/voult/signin/magic">Magic link</a>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="card voult-card h-100">
+            <div class="card-body">
+              <h2 class="h5 card-title">Session &amp; profile</h2>
+              <p class="card-text text-secondary small">getCurrentUser(client) after tokens are stored</p>
+              <a class="btn btn-success btn-sm" href="/voult/account">Open account page</a>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="card voult-card h-100">
+            <div class="card-body">
+              <h2 class="h5 card-title">JSON API (same SDK routes)</h2>
+              <p class="card-text text-secondary small">POST without <code>_redirect</code> returns JSON for scripts or Postman.</p>
+              <ul class="small mb-0 ps-3">
+                <li><code>POST /signin/email</code></li>
+                <li><code>POST /signup/email</code></li>
+                <li><code>GET /profile</code> (needs prior sign-in + session sync)</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

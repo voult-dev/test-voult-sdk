@@ -1,0 +1,57 @@
+<% layout('layout/boilerplate.ejs') %>
+
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-10">
+      <h1 class="h3 mb-3">Account — getCurrentUser(client)</h1>
+      <p class="text-secondary">
+        Response from <code>GET /api/user/me</code> via the SDK (tokens were synced from your Express session into the shared client).
+      </p>
+
+      <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-white fw-semibold">Profile JSON</div>
+        <div class="card-body">
+          <pre class="bg-dark text-light p-3 rounded small mb-0 overflow-auto" style="max-height: 420px;"><%= JSON.stringify(profile, null, 2) %></pre>
+        </div>
+      </div>
+
+      <% if (storedUser) { %>
+        <div class="card border-0 shadow-sm mb-4">
+          <div class="card-header bg-white fw-semibold">User snapshot from session (after sign-in)</div>
+          <div class="card-body">
+            <pre class="small bg-light p-3 rounded mb-0 overflow-auto"><%= JSON.stringify(storedUser, null, 2) %></pre>
+          </div>
+        </div>
+      <% } %>
+
+      <div class="row g-3">
+        <div class="col-md-6">
+          <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body">
+              <h2 class="h6">signOut(client)</h2>
+              <p class="small text-secondary">Clears API session and this app’s <code>req.session.voult</code>.</p>
+              <form action="/logout" method="POST">
+                <input type="hidden" name="_redirect" value="1">
+                <button type="submit" class="btn btn-outline-danger btn-sm">Sign out</button>
+              </form>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body">
+              <h2 class="h6">deleteUser(client)</h2>
+              <p class="small text-secondary">Calls the SDK disable/delete flow; destructive for this test user.</p>
+              <form action="/delete-user" method="POST" onsubmit="return confirm('Disable this account via the SDK?');">
+                <input type="hidden" name="_redirect" value="1">
+                <button type="submit" class="btn btn-outline-warning btn-sm">Disable account</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <p class="mt-4 mb-0"><a href="/voult">← Playground</a></p>
+    </div>
+  </div>
+</div>

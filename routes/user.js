@@ -5,7 +5,7 @@ const controller = require('../controllers/user');
 
 const catchAsync = require('../utils/catchAsync');
 
-router.get('/profile', catchAsync(controller.profile));
+router.get('/profile', catchAsync(controller.profileJson));
 
 router.post('/logout', catchAsync(controller.logout));
 

@@ -1,0 +1,41 @@
+.flash {
+  max-width: 960px;
+  margin: 1rem auto;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  border: 1px solid transparent;
+}
+
+.flash-success {
+  background: #d1e7dd;
+  border-color: #badbcc;
+  color: #0f5132;
+}
+
+.flash-error {
+  background: #f8d7da;
+  border-color: #f5c2c7;
+  color: #842029;
+}
+
+.flash-info {
+  background: #cff4fc;
+  border-color: #b6effb;
+  color: #055160;
+}
+
+.voult-card {
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 0.75rem;
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.voult-card:hover {
+  box-shadow: 0 0.5rem 1.25rem rgba(15, 23, 42, 0.08);
+  transform: translateY(-2px);
+}
+
+.code-inline {
+  font-size: 0.85rem;
+  word-break: break-all;
+}

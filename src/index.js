@@ -13,6 +13,7 @@ const path = require('path');
 const ejsMate = require('ejs-mate');
 
 const ExpressError = require('../utils/expressError');
+const syncVoultClient = require('../middleware/syncVoultClient');
 
 app.use(express.json());
 app.use(express.urlencoded({ 
@@ -23,8 +24,10 @@ app.use(express.urlencoded({
 const signinRoutes = require('../routes/signin');
 const signupRoutes = require('../routes/signup');
 const userRoutes = require('../routes/user');
+const voultRoutes = require('../routes/voult');
 
 app.use(session(sessionConfig));
+app.use(syncVoultClient);
 app.use(flash());
 
 app.set('views', path.join(__dirname, '../views'));
@@ -46,10 +49,11 @@ app.use((req, res, next) => {
 
 app.use('/signin', signinRoutes);
 app.use('/signup', signupRoutes);
+app.use('/voult', voultRoutes);
 app.use('/', userRoutes);
 
-app.get('/', (req, res)=>{
-  res.render('home', {title : "Homepage"})
+app.get('/', (req, res) => {
+  res.render('home', { title: 'Voult SDK test app' });
 });
 
 app.all(/(.*)/, (req, res, next) => {
