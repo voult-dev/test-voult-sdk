@@ -47,7 +47,6 @@ app.use('/signup', signupRoutes);
 app.use('/', userRoutes);
 
 app.get('/', (req, res)=>{
-  req.flash('info', 'This is the homepage')
   res.render('home', {title : "Homepage"})
 });
 
