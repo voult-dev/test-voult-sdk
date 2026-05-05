@@ -1,6 +1,10 @@
 const client = require('../config/client');
 const { signInWithEmailAndPassword,signInWithUsernameAndPassword, signInWithEmailLink } = require('voult-sdk');
 
+module.exports.signinUsernameForm = (req, res)=>{
+    res.render('signin/username');
+}
+
 module.exports.signinWithEmailAndPassword = async (req, res) => {
     console.log(req.body);
     const { email, password } = req.body;
