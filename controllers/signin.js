@@ -2,8 +2,8 @@ const client = require('../config/client');
 const { signInWithEmailAndPassword,signInWithUsernameAndPassword, signInWithEmailLink } = require('voult-sdk');
 
 module.exports.signinUsernameForm = (req, res)=>{
-    res.render('signin/username');
-}
+    res.render('signin/username', {title : 'Username SignIn'});
+};
 
 module.exports.signinWithEmailAndPassword = async (req, res) => {
     console.log(req.body);
@@ -29,7 +29,7 @@ module.exports.signInWithEmailLink = async(req, res) =>{
     await signInWithEmailLink(
         email,
         {redirectUri},
-        clien
+        client
     );
 
     res.json({

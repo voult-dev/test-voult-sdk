@@ -12,6 +12,8 @@ const flash = require('connect-flash');
 const path = require('path');
 const ejsMate = require('ejs-mate');
 
+const ExpressError = require('../utils/expressError');
+
 app.use(express.json());
 app.use(express.urlencoded({ 
   extended: true,
