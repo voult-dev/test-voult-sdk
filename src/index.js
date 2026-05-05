@@ -46,6 +46,10 @@ app.use('/signin', signinRoutes);
 app.use('/signup', signupRoutes);
 app.use('/', userRoutes);
 
+app.get('/', (req, res)=>{
+  res.render('home', {title : "Homepage"})
+});
+
 app.all(/(.*)/, (req, res, next) => {
   next(new ExpressError('Page not found', 404))
 });
@@ -55,7 +59,7 @@ app.use((err, req, res, next)=>{
   if(!err.message){
       err.message = 'Something Went Wrong!'
   }
-  res.status(statusCode).render('error', {err})
+  res.status(statusCode).render('error', {err, title : "Error Page"})
 });
 
 const port = process.env.port || 2000;
