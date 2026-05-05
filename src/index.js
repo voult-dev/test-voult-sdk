@@ -47,10 +47,10 @@ app.use((req, res, next) => {
   next();
 });
 
+app.use('/voult', voultRoutes);
+app.use('/', userRoutes);
 app.use('/signin', signinRoutes);
 app.use('/signup', signupRoutes);
-// app.use('/voult', voultRoutes);
-// app.use('/', userRoutes);
 
 app.get('/', (req, res) => {
   res.render('home', { title: 'Voult SDK test app' });
