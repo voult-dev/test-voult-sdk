@@ -4,6 +4,7 @@ const {
   signInWithUsernameAndPassword,
   signInWithEmailLink,
 } = require('voult-sdk');
+
 const { persistVoultAuth } = require('../utils/voultSession');
 const { getAppBaseUrl } = require('../utils/appBaseUrl');
 const catchAsync = require('../utils/catchAsync');

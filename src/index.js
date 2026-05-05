@@ -56,8 +56,8 @@ app.get('/', (req, res) => {
   res.render('home', { title: 'Voult SDK test app' });
 });
 
-app.all(/(.*)/, (req, res, next) => {
-  next(new ExpressError('Page not found', 404))
+app.use((req, res, next) => {
+  next(new ExpressError('Page not found', 404));
 });
 
 app.use((err, req, res, next)=>{
