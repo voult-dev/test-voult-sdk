@@ -27,8 +27,6 @@ module.exports.signinWithEmailAndPassword = catchAsync(async (req, res) => {
     return res.redirect('/voult/account');
   }
 
-  req.user = result.user;
-
   res.json({
     message: result.message,
     user: result.user,
@@ -51,7 +49,6 @@ module.exports.signinWithUsernameAndPassword = catchAsync(async (req, res) => {
     accessToken: result.accessToken,
     refreshToken: result.refreshToken,
   });
-  req.user = result.user;
   res.redirect('/');
 });
 
