@@ -53,6 +53,7 @@ app.use('/signin', signinRoutes);
 app.use('/signup', signupRoutes);
 
 app.get('/', (req, res) => {
+  console.log(req.user);
   res.render('home', { title: 'Voult SDK test app' });
 });
 
