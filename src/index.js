@@ -53,7 +53,6 @@ app.use('/signin', signinRoutes);
 app.use('/signup', signupRoutes);
 
 app.get('/', (req, res) => {
-  console.log(req.user);
   res.render('home', { title: 'Voult SDK test app' });
 });
 
@@ -66,6 +65,7 @@ app.use((err, req, res, next)=>{
   if(!err.message){
       err.message = 'Something Went Wrong!'
   }
+  console.error(err);
   res.status(statusCode).render('error', {
     err,
     title: statusCode === 404 ? 'Page not found' : 'Error',
