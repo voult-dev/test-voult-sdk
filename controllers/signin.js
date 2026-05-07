@@ -23,11 +23,9 @@ module.exports.signinWithEmailAndPassword = catchAsync(async (req, res) => {
   console.log(result);
   persistVoultAuth(req, result);
   if (wantsBrowserRedirect(req)) {
-    console.log(result);
     req.flash('success', result.message || 'Signed in with email and password.');
     return res.redirect('/voult/account');
   }
-
   res.json({
     message: result.message,
     user: result.user,
@@ -39,14 +37,19 @@ module.exports.signinWithEmailAndPassword = catchAsync(async (req, res) => {
 module.exports.signinWithUsernameAndPassword = catchAsync(async (req, res) => {
   const { username, password } = req.body;
   const result = await signInWithUsernameAndPassword(username, password, client);
+  console.log(result);
+  console.log(result);
   persistVoultAuth(req, result);
-
   if (wantsBrowserRedirect(req)) {
-    console.log(result);
     req.flash('success', result.message || 'Signed in with username and password.');
     return res.redirect('/voult/account');
   }
-
+  console.log({
+    message: result.message || 'Sign in successful',
+    user: result.user,
+    accessToken: result.accessToken,
+    refreshToken: result.refreshToken,
+  });
   res.redirect('/');
 });
 

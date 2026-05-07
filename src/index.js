@@ -26,8 +26,6 @@ const signupRoutes = require('../routes/signup');
 const userRoutes = require('../routes/user');
 const voultRoutes = require('../routes/voult');
 
-const currentUser = require('../config/currentUser');
-
 app.use(session(sessionConfig));
 app.use(syncVoultClient);
 app.use(flash());
@@ -45,12 +43,7 @@ app.use((req, res, next) => {
   res.locals.success = req.flash('success');
   res.locals.error = req.flash('error');
   res.locals.info = req.flash('info');
-  res.locals.currentUser = currentUser;
-  next();
-});
-
-app.use((req, res, next) => {
-  req.user = currentUser;
+  res.locals.currentUser = req.user;
   next();
 });
 
@@ -59,7 +52,7 @@ app.use('/', userRoutes);
 app.use('/signin', signinRoutes);
 app.use('/signup', signupRoutes);
 
-app.get('/', async(req, res) => {
+app.get('/', (req, res) => {
   res.render('home', { title: 'Voult SDK test app' });
 });
 
@@ -72,7 +65,6 @@ app.use((err, req, res, next)=>{
   if(!err.message){
       err.message = 'Something Went Wrong!'
   }
-  console.error(err);
   res.status(statusCode).render('error', {
     err,
     title: statusCode === 404 ? 'Page not found' : 'Error',
