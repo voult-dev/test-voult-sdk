@@ -38,7 +38,7 @@ module.exports.signinWithUsernameAndPassword = catchAsync(async (req, res) => {
   const { username, password } = req.body;
   const result = await signInWithUsernameAndPassword(username, password, client);
   console.log(result);
-  console.log(result);
+
   persistVoultAuth(req, result);
   if (wantsBrowserRedirect(req)) {
     req.flash('success', result.message || 'Signed in with username and password.');
