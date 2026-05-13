@@ -22,10 +22,12 @@
           <a class="nav-link" href="/voult/account">Account</a>
         </li>
       </ul>
+
       <form action="/logout" method="POST">
         <input type="hidden" name="_redirect" value="1">
         <button type="submit" class="btn btn-outline-danger btn-sm me-3">Sign out</button>
       </form>
+
       <div class="d-flex gap-2 align-items-center">
         <span class="text-white-50 small d-none d-md-inline">JSON: </span>
         <code class="text-warning small">GET /profile</code>
