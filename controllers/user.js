@@ -39,6 +39,25 @@ module.exports.logout = catchAsync(async (req, res) => {
     });
   }
 });
+// module.exports.logout = async(req, res)=>{
+//   try {
+//     await signOut(client);
+//     req.flash('success', 'Signed out.');
+//     return res.redirect('/voult');
+//   } catch (err) {
+//     // Still clear local session so UI becomes consistent.
+//     clearVoultAuth(req);
+
+//     if (wantsBrowserRedirect(req)) {
+//       req.flash('success', 'Signed out.');
+//       return res.redirect('/voult');
+//     }
+
+//     return res.status(200).json({
+//       message: 'Signed out successfully',
+//       warning: err?.code === 'AUTHENTICATION_ERROR' ? 'Remote token invalid/expired; local session cleared.' : undefined,
+//     });
+// }}
 
 module.exports.deleteAcct = catchAsync(async (req, res) => {
   await deleteUser(client);

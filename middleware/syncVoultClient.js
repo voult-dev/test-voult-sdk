@@ -12,6 +12,16 @@ module.exports = function syncVoultClient(req, res, next) {
   // After the response is sent, write any refreshed tokens back to session
   res.on('finish', () => {
     if (!req.session) return;
+
+    // Skip writing session back during logout.
+    // Otherwise, sync can re-populate req.session.voult right after clearVoultAuth(req).
+    const isLogoutReq =
+      req.path === '/logout' ||
+      req.originalUrl?.includes('/logout') ||
+      req.route?.path === '/logout';
+
+    if (isLogoutReq) return;
+
     if (client.isAuthenticated()) {
       // Only update if the token actually changed (i.e. a refresh happened)
       const sessionToken = req.session.voult && req.session.voult.accessToken;
