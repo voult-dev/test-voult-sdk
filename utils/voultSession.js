@@ -19,9 +19,19 @@ function persistVoultAuth(req, result) {
 }
 
 function clearVoultAuth(req) {
-  if (req.session) {
-    delete req.session.voult;
+  if (!req.session) return;
+
+  // Remove the auth object entirely.
+  // Some code checks req.session.voult.accessToken, so removing the parent
+  // ensures middleware redirects immediately.
+  delete req.session.voult;
+
+  // Ensure the session is saved before redirect so subsequent GET /account
+  // sees the cleared state on the first click.
+  if (typeof req.session.save === 'function') {
+    req.session.save(() => {});
   }
 }
+
 
 module.exports = { persistVoultAuth, clearVoultAuth };
