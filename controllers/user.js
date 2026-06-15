@@ -25,9 +25,7 @@ module.exports.logout = catchAsync(async (req, res) => {
   try {
     await signOut(client);
   } catch (err) {
-    // Remote logout can fail if the access token expired.
-    // Logout must remain idempotent; always proceed to clear local session.
-    req.flash('error', 'Something Went Wrong')
+    req.flash('error', 'Something Went Wrong!')
     res.redirect('/');
   }
 

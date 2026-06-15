@@ -4,8 +4,9 @@ const router = express.Router();
 const playground = require('../controllers/voultPlayground');
 const magicCallback = require('../controllers/magicCallback');
 const userController = require('../controllers/user');
-const requireVoultSession = require('../middleware/requireVoultSession');
 const postController = require('../controllers/signin');
+
+const requireVoultSession = require('../middleware/requireVoultSession');
 
 const catchAsync = require('../utils/catchAsync');
 

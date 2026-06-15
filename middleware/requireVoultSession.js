@@ -3,7 +3,7 @@
  */
 module.exports = function requireVoultSession(req, res, next) {
   if (!req.session.voult || !req.session.voult.accessToken) {
-    req.flash('error', 'Sign in first to view that page.');
+    req.flash('error', 'Sign in first to perform that action.');
     return res.redirect('/voult/signin/email');
   }
   next();
