@@ -1,0 +1,79 @@
+<% layout('layout/boilerplate.ejs') %>
+
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-10">
+      <h1 class="h3 mb-3">OAuth Sign in / Sign up</h1>
+      <p class="text-secondary mb-4">Use one of the supported OAuth providers to sign in or create an account.</p>
+
+      <div class="row g-3">
+        <% ['google', 'github', 'facebook', 'linkedin', 'microsoft', 'apple'].forEach(function(provider) { %>
+          <div class="col-md-6">
+            <div class="card shadow-sm border-0 h-100">
+              <div class="card-body">
+                <h2 class="h5 card-title text-capitalize"><%= provider %></h2>
+                <p class="card-text text-secondary small">
+                  Direct OAuth token exchange (supports idToken, accessToken, code).
+                </p>
+                <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="collapse" data-bs-target="#<%= provider %>Form" aria-expanded="false" aria-controls="<%= provider %>Form">
+                  Show form
+                </button>
+                <div class="collapse mt-3" id="<%= provider %>Form">
+                  <form action="/voult/oauth/<%= provider %>/register" method="POST" class="card border-0 shadow-sm mb-2">
+                    <div class="card-body">
+                      <p class="small fw-semibold text-uppercase text-muted">Register with <%= provider %></p>
+                      <div class="mb-2">
+                        <label class="form-label small" for="<%= provider %>-register-idToken">idToken (optional)</label>
+                        <input class="form-control" id="<%= provider %>-register-idToken" name="idToken" type="text">
+                      </div>
+                      <div class="mb-2">
+                        <label class="form-label small" for="<%= provider %>-register-accessToken">accessToken (optional)</label>
+                        <input class="form-control" id="<%= provider %>-register-accessToken" name="accessToken" type="text">
+                      </div>
+                      <div class="mb-2">
+                        <label class="form-label small" for="<%= provider %>-register-code">code (optional)</label>
+                        <input class="form-control" id="<%= provider %>-register-code" name="code" type="text">
+                      </div>
+                      <div class="mb-2">
+                        <label class="form-label small" for="<%= provider %>-register-email">Email (optional)</label>
+                        <input class="form-control" id="<%= provider %>-register-email" name="email" type="email">
+                      </div>
+                      <div class="mb-2">
+                        <label class="form-label small" for="<%= provider %>-register-fullName">Full Name (optional)</label>
+                        <input class="form-control" id="<%= provider %>-register-fullName" name="fullName" type="text">
+                      </div>
+                      <input type="hidden" name="_redirect" value="1">
+                      <button type="submit" class="btn btn-primary btn-sm">Register</button>
+                    </div>
+                  </form>
+
+                  <form action="/voult/oauth/<%= provider %>/login" method="POST" class="card border-0 shadow-sm">
+                    <div class="card-body">
+                      <p class="small fw-semibold text-uppercase text-muted">Sign in with <%= provider %></p>
+                      <div class="mb-2">
+                        <label class="form-label small" for="<%= provider %>-login-idToken">idToken (optional, for Google/Apple)</label>
+                        <input class="form-control" id="<%= provider %>-login-idToken" name="idToken" type="text">
+                      </div>
+                      <div class="mb-2">
+                        <label class="form-label small" for="<%= provider %>-login-accessToken">accessToken (optional, for Facebook)</label>
+                        <input class="form-control" id="<%= provider %>-login-accessToken" name="accessToken" type="text">
+                      </div>
+                      <div class="mb-2">
+                        <label class="form-label small" for="<%= provider %>-login-code">code (optional, for GitHub/LinkedIn/Microsoft)</label>
+                        <input class="form-control" id="<%= provider %>-login-code" name="code" type="text">
+                      </div>
+                      <input type="hidden" name="_redirect" value="1">
+                      <button type="submit" class="btn btn-dark btn-sm">Login</button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+
+      <p class="mt-4 mb-0"><a href="/voult">← Playground</a></p>
+    </div>
+  </div>
+</div>
