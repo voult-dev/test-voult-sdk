@@ -4,15 +4,6 @@ This guide is for teams whose **other codebase uses Voult only for authenticatio
 
 Your app owns product UI, sessions/cookies for *your* users, business data, and authorization. Voult owns identity: passwords, tokens, MFA, passkeys, OAuth identity, magic links, lockout, and auth audit events.
 
-> **Related deep dives** (do not re-implement these internals):
-> - Architecture & consumption model → [architecture.md](../architecture/architecture.md) §12
-> - MFA / TOTP → [MFA_TOTP_GUIDE.md](../security_imp/MFA_TOTP_GUIDE.md)
-> - WebAuthn / passkeys → [WEBAUTHN_GUIDE.md](../security_imp/WEBAUTHN_GUIDE.md)
-> - Magic link → [MAGIC_LINK_AUTHENTICATION_GUIDE.md](../features/MAGIC_LINK_AUTHENTICATION_GUIDE.md)
-> - OAuth → [OAUTH_TESTING_AND_IMPLEMENTATION_GUIDE.md](../oauth/OAUTH_TESTING_AND_IMPLEMENTATION_GUIDE.md)
-> - Tokens → [TOKEN_SECURITY_AND_MANAGEMENT.md](../features/TOKEN_SECURITY_AND_MANAGEMENT.md)
-> - Integrator security duties → [OVERALL_SECURITY.MD](../security_imp/OVERALL_SECURITY.MD)
-
 ---
 
 ## Table of contents
@@ -86,7 +77,6 @@ Password rules Voult enforces (validate in your UI before submit):
 `voult-sdk` lives in a **separate repo** (`voult-dev/voult-sdk`). It is designed for **server-to-server** calls with `X-Client-Id` / `X-Client-Secret`. It does **not** replace your product UI.
 
 ```bash
-# When published:
 npm install voult-sdk
 ```
 
