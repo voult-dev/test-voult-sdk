@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../lib/api';
+import { getPasswordValidationError } from '../lib/password';
 import { useAuth } from '../context/AuthContext';
+import PasswordField from '../components/PasswordField';
 import ResponsePanel, { useApiAction } from '../components/ResponsePanel';
 
 export default function SignupPage() {
@@ -9,6 +11,7 @@ export default function SignupPage() {
   const { refreshSession } = useAuth();
   const { data, error, loading, run } = useApiAction();
   const [mode, setMode] = useState('email');
+  const [passwordError, setPasswordError] = useState('');
   const [form, setForm] = useState({
     email: '',
     username: '',
@@ -16,10 +19,23 @@ export default function SignupPage() {
     fullName: '',
   });
 
-  const onChange = (e) => setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
+  const onChange = (e) => {
+    const { name, value } = e.target;
+    setForm((f) => ({ ...f, [name]: value }));
+    if (name === 'password') {
+      setPasswordError(getPasswordValidationError(value) || '');
+    }
+  };
 
   const submit = async (e) => {
     e.preventDefault();
+
+    const validationMessage = getPasswordValidationError(form.password);
+    if (validationMessage) {
+      setPasswordError(validationMessage);
+      return;
+    }
+
     const path = mode === 'email' ? '/auth/register' : '/auth/username-register';
     const body =
       mode === 'email'
@@ -89,17 +105,12 @@ export default function SignupPage() {
           Full name
           <input name="fullName" value={form.fullName} onChange={onChange} />
         </label>
-        <label>
-          Password
-          <input
-            name="password"
-            type="password"
-            value={form.password}
-            onChange={onChange}
-            required
-            placeholder="Str0ng!Pass"
-          />
-        </label>
+        <PasswordField
+          value={form.password}
+          onChange={onChange}
+          showValidation={Boolean(passwordError)}
+        />
+        {passwordError && <p className="field-error">{passwordError}</p>}
         <button type="submit" className="btn btn-primary" disabled={loading}>
           {loading ? 'Registering…' : 'Register'}
         </button>

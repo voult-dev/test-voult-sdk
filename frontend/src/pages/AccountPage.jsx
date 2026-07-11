@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { api } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 import ResponsePanel, { useApiAction } from '../components/ResponsePanel';
+import PasswordField from '../components/PasswordField';
 
 export default function AccountPage() {
   const { refreshSession, authenticated } = useAuth();
@@ -84,15 +85,12 @@ export default function AccountPage() {
         <h2>Set password (social-only accounts)</h2>
         <p className="endpoint-hint">POST /api/me/set-password</p>
         <form onSubmit={submitSetPassword}>
-          <label>
-            New password
-            <input
-              type="password"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              required
-            />
-          </label>
+          <PasswordField
+            label="New password"
+            name="newPassword"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+          />
           <button type="submit" className="btn btn-secondary" disabled={!authenticated || loading}>
             Set password
           </button>

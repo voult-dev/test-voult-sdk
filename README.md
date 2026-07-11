@@ -26,8 +26,24 @@ CLIENT_SECRET=...
 SESSION_SECRET=change-me
 ```
 
-1. Add `http://localhost:5173/magic-callback` to your Voult app's allowed callback URLs if testing magic links.x
-2. Install and run:
+1. Add `http://localhost:5173/magic-callback` to your Voult app's allowed callback URLs if testing magic links.
+
+2. For one-click Google/GitHub login, add OAuth app credentials to `backend/.env`:
+
+```bash
+GOOGLE_CLIENT_ID=...
+GOOGLE_CLIENT_SECRET=...
+GITHUB_CLIENT_ID=...
+GITHUB_CLIENT_SECRET=...
+```
+
+Register these redirect URIs in Google Cloud Console / GitHub OAuth app settings:
+- `http://localhost:2000/oauth/callback/google`
+- `http://localhost:2000/oauth/callback/github`
+
+Also enable Google and GitHub providers in your **Voult app dashboard**.
+
+3. Install and run:
 
 ```bash
 npm install
@@ -60,6 +76,12 @@ All endpoints from VOULT_AUTH.md §11:
 
 
 
+
+## Password rules
+
+Voult only accepts these special characters: `@$!%*?&`
+
+Passwords like `V:ajRyizU7jt:_T` fail because `:` and `_` are not allowed, even though they look strong. Use something like `Str0ng!Pass` instead.
 
 ## Scripts
 

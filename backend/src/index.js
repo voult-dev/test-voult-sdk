@@ -6,6 +6,7 @@ import sessionConfig from './config/session.js';
 import syncVoultClient from './middleware/syncVoultClient.js';
 import errorHandler from './middleware/errorHandler.js';
 import apiRoutes from './routes/api.js';
+import oauthFlowRoutes from './routes/oauthFlow.js';
 
 const app = express();
 const PORT = Number(process.env.PORT || process.env.port || 2000);
@@ -40,6 +41,7 @@ app.get('/health', (_req, res) => {
 });
 
 app.use('/api', apiRoutes);
+app.use('/oauth', oauthFlowRoutes);
 
 app.use((_req, res) => {
   res.status(404).json({

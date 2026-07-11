@@ -1,35 +1,42 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { api } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 import ResponsePanel, { useApiAction } from '../components/ResponsePanel';
 
-const PROVIDERS = ['google', 'github', 'facebook', 'linkedin', 'microsoft', 'apple'];
-
-const PROVIDER_FIELDS = {
-  google: ['idToken', 'accessToken'],
-  github: ['code', 'redirectUri'],
-  facebook: ['accessToken'],
-  linkedin: ['code'],
-  microsoft: ['code'],
-  apple: ['idToken', 'code', 'fullName', 'email'],
-};
+const API_ORIGIN = import.meta.env.VITE_API_ORIGIN || 'http://localhost:2000';
 
 export default function OAuthPage() {
+  const [searchParams] = useSearchParams();
   const { refreshSession } = useAuth();
-  const { data, error, loading, run } = useApiAction();
-  const [provider, setProvider] = useState('google');
+  const { data, error, loading, run, reset } = useApiAction();
+  const [config, setConfig] = useState({ google: { configured: false }, github: { configured: false } });
   const [intent, setIntent] = useState('login');
-  const [form, setForm] = useState({});
+  const [provider, setProvider] = useState('google');
+  const [manualForm, setManualForm] = useState({});
 
-  const onChange = (field, value) => setForm((f) => ({ ...f, [field]: value }));
+  useEffect(() => {
+    api('/oauth/config')
+      .then(setConfig)
+      .catch(() => {});
+  }, []);
 
-  const submit = async (e) => {
-    e.preventDefault();
-    const body = {};
-    for (const field of PROVIDER_FIELDS[provider]) {
-      if (form[field]) body[field] = form[field];
+  useEffect(() => {
+    const oauthError = searchParams.get('error');
+    if (oauthError) {
+      reset();
     }
+  }, [searchParams, reset]);
 
+  const oauthError = searchParams.get('error');
+
+  const startOAuth = (selectedProvider) => {
+    window.location.href = `${API_ORIGIN}/oauth/${selectedProvider}/start?intent=${intent}`;
+  };
+
+  const submitManual = async (e) => {
+    e.preventDefault();
+    const body = { ...manualForm };
     const result = await run(() =>
       api(`/auth/${provider}/${intent}`, { method: 'POST', body }),
     );
@@ -37,38 +44,38 @@ export default function OAuthPage() {
     return result;
   };
 
-  const linkProvider = () =>
-    run(() => api(`/oauth/${provider}/link`, { method: 'POST' }));
-
+  const linkProvider = () => run(() => api(`/oauth/${provider}/link`, { method: 'POST' }));
   const loadLinked = () => run(() => api('/me/oauth-accounts'));
-
   const unlinkProvider = () =>
     run(() => api(`/me/oauth-accounts/${provider}`, { method: 'DELETE' }));
+
+  const manualFields = {
+    google: ['idToken', 'accessToken'],
+    github: ['code', 'redirectUri'],
+    facebook: ['accessToken'],
+    linkedin: ['code'],
+    microsoft: ['code'],
+    apple: ['idToken', 'code', 'fullName', 'email'],
+  };
 
   return (
     <div className="page">
       <header className="page-header">
         <h1>OAuth</h1>
-        <p>POST /api/auth/{'{provider}'}/login|register · linking via /api/oauth/:provider/link</p>
+        <p>One-click Google/GitHub sign-in, then Voult token exchange.</p>
       </header>
 
+      {oauthError && (
+        <section className="form-card danger-zone">
+          <p className="field-error">OAuth error: {oauthError}</p>
+        </section>
+      )}
+
       <section className="form-card">
-        <h2>Provider token exchange (Model A)</h2>
-        <div className="tab-row">
-          {PROVIDERS.map((p) => (
-            <button
-              key={p}
-              type="button"
-              className={provider === p ? 'tab active' : 'tab'}
-              onClick={() => {
-                setProvider(p);
-                setForm({});
-              }}
-            >
-              {p}
-            </button>
-          ))}
-        </div>
+        <h2>Sign in with provider</h2>
+        <p className="endpoint-hint">
+          Redirect flow → callback → POST /api/auth/{'{provider}'}/login|register
+        </p>
 
         <div className="tab-row">
           <button
@@ -87,29 +94,76 @@ export default function OAuthPage() {
           </button>
         </div>
 
-        <form onSubmit={submit}>
-          {PROVIDER_FIELDS[provider].map((field) => (
+        <div className="oauth-buttons">
+          <button
+            type="button"
+            className="btn btn-oauth btn-google"
+            onClick={() => startOAuth('google')}
+            disabled={!config.google.configured}
+          >
+            Continue with Google
+          </button>
+          <button
+            type="button"
+            className="btn btn-oauth btn-github"
+            onClick={() => startOAuth('github')}
+            disabled={!config.github.configured}
+          >
+            Continue with GitHub
+          </button>
+        </div>
+
+        {!config.google.configured && (
+          <p className="hint">Google: set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in backend/.env</p>
+        )}
+        {!config.github.configured && (
+          <p className="hint">GitHub: set GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET in backend/.env</p>
+        )}
+        <p className="hint">
+          Register this callback in Google/GitHub:{' '}
+          <code>http://localhost:2000/oauth/callback/google</code> or{' '}
+          <code>/oauth/callback/github</code>
+        </p>
+      </section>
+
+      <section className="form-card">
+        <h2>Advanced: manual token exchange</h2>
+        <p className="hint">For testing Model A directly with tokens or codes you already have.</p>
+
+        <div className="tab-row">
+          {['google', 'github', 'facebook', 'linkedin', 'microsoft', 'apple'].map((p) => (
+            <button
+              key={p}
+              type="button"
+              className={provider === p ? 'tab active' : 'tab'}
+              onClick={() => {
+                setProvider(p);
+                setManualForm({});
+              }}
+            >
+              {p}
+            </button>
+          ))}
+        </div>
+
+        <form onSubmit={submitManual}>
+          {manualFields[provider].map((field) => (
             <label key={field}>
               {field}
               <input
-                value={form[field] || ''}
-                onChange={(e) => onChange(field, e.target.value)}
-                placeholder={field === 'redirectUri' ? 'https://yourapp.com/callback' : ''}
+                value={manualForm[field] || ''}
+                onChange={(e) => setManualForm((f) => ({ ...f, [field]: e.target.value }))}
               />
             </label>
           ))}
-          <button type="submit" className="btn btn-primary" disabled={loading}>
-            {intent === 'login' ? 'OAuth login' : 'OAuth register'}
+          <button type="submit" className="btn btn-secondary" disabled={loading}>
+            Manual {intent}
           </button>
         </form>
       </section>
 
       <section className="form-card">
         <h2>Account linking (authenticated)</h2>
-        <p className="endpoint-hint">
-          POST /api/oauth/:provider/link · GET /api/me/oauth-accounts · DELETE
-          /api/me/oauth-accounts/:provider
-        </p>
         <div className="inline-actions">
           <button type="button" className="btn btn-secondary" onClick={linkProvider} disabled={loading}>
             Link {provider}

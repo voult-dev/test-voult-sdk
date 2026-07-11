@@ -489,4 +489,18 @@ router.get(
   }),
 );
 
+// OAuth redirect flow config (credentials live in backend .env)
+router.get('/oauth/config', (_req, res) => {
+  res.json({
+    google: {
+      configured: Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET),
+      callbackUrl: process.env.OAUTH_REDIRECT_URI || 'http://localhost:2000/oauth/callback/google',
+    },
+    github: {
+      configured: Boolean(process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET),
+      callbackUrl: process.env.OAUTH_REDIRECT_URI || 'http://localhost:2000/oauth/callback/github',
+    },
+  });
+});
+
 export default router;

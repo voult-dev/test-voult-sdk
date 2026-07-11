@@ -12,4 +12,9 @@ export default defineConfig({
       },
     },
   },
+  define: {
+    'import.meta.env.VITE_API_ORIGIN': JSON.stringify(
+      process.env.VITE_API_ORIGIN || 'http://localhost:2000',
+    ),
+  },
 });
