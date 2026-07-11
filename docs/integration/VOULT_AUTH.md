@@ -262,7 +262,7 @@ For each feature: what **your app** builds, what **Voult** owns, and the calls t
 
 ### 6.3 MFA (TOTP)
 
-Full guide: [MFA_TOTP_GUIDE.md](../security_imp/MFA_TOTP_GUIDE.md).
+Full guide: [MFA_TOTP_GUIDE.md](../information/MFA_TOTP_GUIDE.md).
 
 | Your app | Voult |
 |----------|-------|
