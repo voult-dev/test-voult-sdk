@@ -148,15 +148,12 @@ export default function AccountPage() {
               required
             />
           </label>
-          <label>
-            New password
-            <input
-              type="password"
-              value={resetForm.password}
-              onChange={(e) => setResetForm((f) => ({ ...f, password: e.target.value }))}
-              required
-            />
-          </label>
+          <PasswordField
+            label="New password"
+            name="password"
+            value={resetForm.password}
+            onChange={(e) => setResetForm((f) => ({ ...f, password: e.target.value }))}
+          />
           <button type="submit" className="btn btn-primary" disabled={loading}>
             POST /api/user/reset-password
           </button>

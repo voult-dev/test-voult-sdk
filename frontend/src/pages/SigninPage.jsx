@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
+import PasswordField from '../components/PasswordField';
 import ResponsePanel, { useApiAction } from '../components/ResponsePanel';
 
 export default function SigninPage() {
@@ -28,11 +29,6 @@ export default function SigninPage() {
       setMfaPending(true);
       navigate('/mfa');
     }
-  };
-
-  const logout = async () => {
-    await run(() => api('/auth/logout', { method: 'POST' }));
-    await refreshSession();
   };
 
   return (
@@ -73,28 +69,15 @@ export default function SigninPage() {
             <input name="username" value={form.username} onChange={onChange} required />
           </label>
         )}
-        <label>
-          Password
-          <input
-            name="password"
-            type="password"
-            value={form.password}
-            onChange={onChange}
-            required
-          />
-        </label>
+        <PasswordField
+          value={form.password}
+          onChange={onChange}
+          showHint={false}
+        />
         <button type="submit" className="btn btn-primary" disabled={loading}>
           {loading ? 'Signing in…' : 'Sign in'}
         </button>
       </form>
-
-      <section className="form-card">
-        <h2>Logout</h2>
-        <p className="endpoint-hint">POST /api/auth/logout</p>
-        <button type="button" className="btn btn-secondary" onClick={logout} disabled={loading}>
-          Sign out
-        </button>
-      </section>
 
       <ResponsePanel data={data} error={error} />
     </div>

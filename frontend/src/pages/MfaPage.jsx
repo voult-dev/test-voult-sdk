@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { api } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 import ResponsePanel, { useApiAction } from '../components/ResponsePanel';
+import PasswordField from '../components/PasswordField';
 
 export default function MfaPage() {
   const { refreshSession, authenticated } = useAuth();
@@ -136,15 +137,13 @@ export default function MfaPage() {
         <h2>Disable MFA</h2>
         <p className="endpoint-hint">POST /api/auth/mfa/disable</p>
         <form onSubmit={disableMfa}>
-          <label>
-            Password
-            <input
-              type="password"
-              value={disableForm.password}
-              onChange={(e) => setDisableForm((f) => ({ ...f, password: e.target.value }))}
-              required
-            />
-          </label>
+          <PasswordField
+            label="Password"
+            name="password"
+            value={disableForm.password}
+            onChange={(e) => setDisableForm((f) => ({ ...f, password: e.target.value }))}
+            showHint={false}
+          />
           <label>
             TOTP / backup code
             <input

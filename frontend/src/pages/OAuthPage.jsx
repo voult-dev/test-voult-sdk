@@ -6,11 +6,29 @@ import ResponsePanel, { useApiAction } from '../components/ResponsePanel';
 
 const API_ORIGIN = import.meta.env.VITE_API_ORIGIN || 'http://localhost:2000';
 
+const OAUTH_PROVIDERS = [
+  { id: 'google', label: 'Continue with Google', className: 'btn-google' },
+  { id: 'github', label: 'Continue with GitHub', className: 'btn-github' },
+  { id: 'facebook', label: 'Continue with Facebook', className: 'btn-facebook' },
+  { id: 'linkedin', label: 'Continue with LinkedIn', className: 'btn-linkedin' },
+  { id: 'microsoft', label: 'Continue with Microsoft', className: 'btn-microsoft' },
+  { id: 'apple', label: 'Continue with Apple', className: 'btn-apple' },
+];
+
+const manualFields = {
+  google: ['idToken', 'accessToken'],
+  github: ['code', 'redirectUri'],
+  facebook: ['accessToken'],
+  linkedin: ['code'],
+  microsoft: ['code'],
+  apple: ['idToken', 'code', 'fullName', 'email'],
+};
+
 export default function OAuthPage() {
   const [searchParams] = useSearchParams();
   const { refreshSession } = useAuth();
   const { data, error, loading, run, reset } = useApiAction();
-  const [config, setConfig] = useState({ google: { configured: false }, github: { configured: false } });
+  const [config, setConfig] = useState({});
   const [intent, setIntent] = useState('login');
   const [provider, setProvider] = useState('google');
   const [manualForm, setManualForm] = useState({});
@@ -22,10 +40,7 @@ export default function OAuthPage() {
   }, []);
 
   useEffect(() => {
-    const oauthError = searchParams.get('error');
-    if (oauthError) {
-      reset();
-    }
+    if (searchParams.get('error')) reset();
   }, [searchParams, reset]);
 
   const oauthError = searchParams.get('error');
@@ -49,20 +64,11 @@ export default function OAuthPage() {
   const unlinkProvider = () =>
     run(() => api(`/me/oauth-accounts/${provider}`, { method: 'DELETE' }));
 
-  const manualFields = {
-    google: ['idToken', 'accessToken'],
-    github: ['code', 'redirectUri'],
-    facebook: ['accessToken'],
-    linkedin: ['code'],
-    microsoft: ['code'],
-    apple: ['idToken', 'code', 'fullName', 'email'],
-  };
-
   return (
     <div className="page">
       <header className="page-header">
         <h1>OAuth</h1>
-        <p>One-click Google/GitHub sign-in, then Voult token exchange.</p>
+        <p>One-click sign-in for every Voult OAuth provider.</p>
       </header>
 
       {oauthError && (
@@ -95,35 +101,32 @@ export default function OAuthPage() {
         </div>
 
         <div className="oauth-buttons">
-          <button
-            type="button"
-            className="btn btn-oauth btn-google"
-            onClick={() => startOAuth('google')}
-            disabled={!config.google.configured}
-          >
-            Continue with Google
-          </button>
-          <button
-            type="button"
-            className="btn btn-oauth btn-github"
-            onClick={() => startOAuth('github')}
-            disabled={!config.github.configured}
-          >
-            Continue with GitHub
-          </button>
+          {OAUTH_PROVIDERS.map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              className={`btn btn-oauth ${item.className}`}
+              onClick={() => startOAuth(item.id)}
+              disabled={!config[item.id]?.configured}
+            >
+              {item.label}
+            </button>
+          ))}
         </div>
 
-        {!config.google.configured && (
-          <p className="hint">Google: set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in backend/.env</p>
-        )}
-        {!config.github.configured && (
-          <p className="hint">GitHub: set GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET in backend/.env</p>
-        )}
-        <p className="hint">
-          Register this callback in Google/GitHub:{' '}
-          <code>http://localhost:2000/oauth/callback/google</code> or{' '}
-          <code>/oauth/callback/github</code>
-        </p>
+        <div className="oauth-config-list">
+          {OAUTH_PROVIDERS.map((item) => (
+            <div key={item.id} className="oauth-config-item">
+              <strong>{item.id}</strong>
+              {config[item.id]?.configured ? (
+                <span className="badge badge-ok">Configured</span>
+              ) : (
+                <span className="badge badge-muted">Not configured</span>
+              )}
+              <code className="callback-url">{config[item.id]?.callbackUrl}</code>
+            </div>
+          ))}
+        </div>
       </section>
 
       <section className="form-card">
@@ -131,17 +134,17 @@ export default function OAuthPage() {
         <p className="hint">For testing Model A directly with tokens or codes you already have.</p>
 
         <div className="tab-row">
-          {['google', 'github', 'facebook', 'linkedin', 'microsoft', 'apple'].map((p) => (
+          {OAUTH_PROVIDERS.map((item) => (
             <button
-              key={p}
+              key={item.id}
               type="button"
-              className={provider === p ? 'tab active' : 'tab'}
+              className={provider === item.id ? 'tab active' : 'tab'}
               onClick={() => {
-                setProvider(p);
+                setProvider(item.id);
                 setManualForm({});
               }}
             >
-              {p}
+              {item.id}
             </button>
           ))}
         </div>

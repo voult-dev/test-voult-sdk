@@ -1,4 +1,6 @@
-import { NavLink, Outlet } from 'react-router-dom';
+import { useState } from 'react';
+import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { api } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 
 const navItems = [
@@ -15,7 +17,22 @@ const navItems = [
 ];
 
 export default function Layout() {
-  const { authenticated, user, mfaPending, loading } = useAuth();
+  const navigate = useNavigate();
+  const { authenticated, user, mfaPending, loading, refreshSession } = useAuth();
+  const [loggingOut, setLoggingOut] = useState(false);
+
+  const logout = async () => {
+    setLoggingOut(true);
+    try {
+      await api('/auth/logout', { method: 'POST' });
+      await refreshSession();
+      navigate('/');
+    } catch {
+      await refreshSession();
+    } finally {
+      setLoggingOut(false);
+    }
+  };
 
   return (
     <div className="app-shell">
@@ -49,6 +66,14 @@ export default function Layout() {
             <>
               <p className="session-user">{user?.email || user?.username || user?.id}</p>
               <span className="badge badge-ok">Authenticated</span>
+              <button
+                type="button"
+                className="btn btn-logout"
+                onClick={logout}
+                disabled={loggingOut}
+              >
+                {loggingOut ? 'Signing out…' : 'Sign out'}
+              </button>
             </>
           ) : mfaPending ? (
             <span className="badge badge-warn">MFA required</span>

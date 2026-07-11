@@ -8,9 +8,28 @@ import {
   signUpWithGoogle,
   signInWithGitHub,
   signUpWithGitHub,
+  signInWithFacebook,
+  signUpWithFacebook,
+  signInWithLinkedIn,
+  signUpWithLinkedIn,
+  signInWithMicrosoft,
+  signUpWithMicrosoft,
+  signInWithApple,
+  signUpWithApple,
 } from 'voult-sdk';
 
 const router = Router();
+
+const SUPPORTED_PROVIDERS = ['google', 'github', 'facebook', 'linkedin', 'microsoft', 'apple'];
+
+const VOULT_HANDLERS = {
+  google: { login: signInWithGoogle, register: signUpWithGoogle },
+  github: { login: signInWithGitHub, register: signUpWithGitHub },
+  facebook: { login: signInWithFacebook, register: signUpWithFacebook },
+  linkedin: { login: signInWithLinkedIn, register: signUpWithLinkedIn },
+  microsoft: { login: signInWithMicrosoft, register: signUpWithMicrosoft },
+  apple: { login: signInWithApple, register: signUpWithApple },
+};
 
 function getFrontendUrl() {
   return (process.env.APP_BASE_URL || 'http://localhost:5173').replace(/\/$/, '');
@@ -24,9 +43,9 @@ function getBackendUrl(req) {
 }
 
 function getRedirectUri(req, provider) {
-  if (process.env.OAUTH_REDIRECT_URI) {
-    return process.env.OAUTH_REDIRECT_URI;
-  }
+  const override = process.env[`${provider.toUpperCase()}_REDIRECT_URI`];
+  if (override) return override;
+  if (process.env.OAUTH_REDIRECT_URI) return process.env.OAUTH_REDIRECT_URI;
   return `${getBackendUrl(req)}/oauth/callback/${provider}`;
 }
 
@@ -43,31 +62,81 @@ function isConfigured(provider) {
   return Boolean(clientId && clientSecret);
 }
 
-function buildGoogleAuthUrl(req, state) {
-  const { clientId } = oauthConfig('google');
-  const redirectUri = getRedirectUri(req, 'google');
-  const params = new URLSearchParams({
-    client_id: clientId,
-    redirect_uri: redirectUri,
-    response_type: 'code',
-    scope: 'openid email profile',
-    access_type: 'online',
-    prompt: 'select_account',
-    state,
-  });
-  return `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
+function assertProvider(provider) {
+  if (!SUPPORTED_PROVIDERS.includes(provider)) {
+    throw new Error(`Unsupported provider: ${provider}`);
+  }
 }
 
-function buildGitHubAuthUrl(req, state) {
-  const { clientId } = oauthConfig('github');
-  const redirectUri = getRedirectUri(req, 'github');
-  const params = new URLSearchParams({
-    client_id: clientId,
-    redirect_uri: redirectUri,
-    scope: 'read:user user:email',
-    state,
-  });
-  return `https://github.com/login/oauth/authorize?${params.toString()}`;
+function buildAuthUrl(req, provider, state) {
+  const { clientId } = oauthConfig(provider);
+  const redirectUri = getRedirectUri(req, provider);
+
+  switch (provider) {
+    case 'google': {
+      const params = new URLSearchParams({
+        client_id: clientId,
+        redirect_uri: redirectUri,
+        response_type: 'code',
+        scope: 'openid email profile',
+        access_type: 'online',
+        prompt: 'select_account',
+        state,
+      });
+      return `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
+    }
+    case 'github': {
+      const params = new URLSearchParams({
+        client_id: clientId,
+        redirect_uri: redirectUri,
+        scope: 'read:user user:email',
+        state,
+      });
+      return `https://github.com/login/oauth/authorize?${params.toString()}`;
+    }
+    case 'facebook': {
+      const params = new URLSearchParams({
+        client_id: clientId,
+        redirect_uri: redirectUri,
+        scope: 'email,public_profile',
+        state,
+      });
+      return `https://www.facebook.com/v21.0/dialog/oauth?${params.toString()}`;
+    }
+    case 'linkedin': {
+      const params = new URLSearchParams({
+        response_type: 'code',
+        client_id: clientId,
+        redirect_uri: redirectUri,
+        scope: 'openid profile email',
+        state,
+      });
+      return `https://www.linkedin.com/oauth/v2/authorization?${params.toString()}`;
+    }
+    case 'microsoft': {
+      const params = new URLSearchParams({
+        client_id: clientId,
+        response_type: 'code',
+        redirect_uri: redirectUri,
+        scope: 'openid profile email',
+        state,
+      });
+      return `https://login.microsoftonline.com/common/oauth2/v2.0/authorize?${params.toString()}`;
+    }
+    case 'apple': {
+      const params = new URLSearchParams({
+        client_id: clientId,
+        redirect_uri: redirectUri,
+        response_type: 'code id_token',
+        response_mode: 'form_post',
+        scope: 'name email',
+        state,
+      });
+      return `https://appleid.apple.com/auth/authorize?${params.toString()}`;
+    }
+    default:
+      throw new Error(`Unsupported provider: ${provider}`);
+  }
 }
 
 async function exchangeGoogleCode(req, code) {
@@ -90,12 +159,68 @@ async function exchangeGoogleCode(req, code) {
   if (!response.ok) {
     throw new Error(data.error_description || data.error || 'Google token exchange failed');
   }
-
   if (!data.id_token) {
     throw new Error('Google did not return an id_token. Ensure openid scope is enabled.');
   }
 
   return { idToken: data.id_token, accessToken: data.access_token };
+}
+
+async function exchangeFacebookCode(req, code) {
+  const { clientId, clientSecret } = oauthConfig('facebook');
+  const redirectUri = getRedirectUri(req, 'facebook');
+  const params = new URLSearchParams({
+    client_id: clientId,
+    client_secret: clientSecret,
+    redirect_uri: redirectUri,
+    code,
+  });
+
+  const response = await fetch(
+    `https://graph.facebook.com/v21.0/oauth/access_token?${params.toString()}`,
+  );
+  const data = await response.json();
+
+  if (!response.ok || !data.access_token) {
+    throw new Error(data.error?.message || 'Facebook token exchange failed');
+  }
+
+  return { accessToken: data.access_token };
+}
+
+async function buildVoultCredentials(req, provider, payload) {
+  const redirectUri = getRedirectUri(req, provider);
+
+  switch (provider) {
+    case 'google':
+      return exchangeGoogleCode(req, payload.code);
+    case 'github':
+      return { code: payload.code, redirectUri };
+    case 'facebook':
+      return exchangeFacebookCode(req, payload.code);
+    case 'linkedin':
+    case 'microsoft':
+      return { code: payload.code };
+    case 'apple': {
+      const credentials = { idToken: payload.idToken };
+      if (payload.code) credentials.code = payload.code;
+      if (payload.user) {
+        try {
+          const user = typeof payload.user === 'string' ? JSON.parse(payload.user) : payload.user;
+          if (user?.name) {
+            const parts = [user.name.firstName, user.name.lastName].filter(Boolean);
+            credentials.fullName = parts.join(' ');
+          }
+          if (user?.email) credentials.email = user.email;
+        } catch {
+          // Apple user payload is optional and only sent once
+        }
+      }
+      return credentials;
+    }
+    default:
+      throw new Error(`Unsupported provider: ${provider}`);
+  }
 }
 
 function redirectWithError(res, message) {
@@ -112,14 +237,56 @@ function redirectSuccess(res) {
   return res.redirect(`${getFrontendUrl()}/account`);
 }
 
-router.get(
-  '/google/start',
-  catchAsync(async (req, res) => {
-    if (!isConfigured('google')) {
+async function completeOAuth(req, res, provider, payload) {
+  const oauthSession = req.session.oauth;
+
+  if (payload.error) {
+    return redirectWithError(res, payload.errorDescription || payload.error);
+  }
+
+  if (!oauthSession || oauthSession.provider !== provider) {
+    return redirectWithError(res, 'OAuth session expired. Please try again.');
+  }
+
+  if (!payload.state || payload.state !== oauthSession.state) {
+    return redirectWithError(res, 'Invalid OAuth state.');
+  }
+
+  if (provider !== 'apple' && !payload.code) {
+    return redirectWithError(res, 'Missing authorization code.');
+  }
+
+  if (provider === 'apple' && !payload.idToken) {
+    return redirectWithError(res, 'Apple did not return an id_token.');
+  }
+
+  const credentials = await buildVoultCredentials(req, provider, payload);
+  const handlers = VOULT_HANDLERS[provider];
+  const result =
+    oauthSession.intent === 'register'
+      ? await handlers.register(credentials, client)
+      : await handlers.login(credentials, client);
+
+  delete req.session.oauth;
+
+  if (result?.mfaRequired) {
+    persistMfaPending(req, result.mfaPendingToken);
+    return redirectWithMfa(res);
+  }
+
+  persistVoultAuth(req, result);
+  return redirectSuccess(res);
+}
+
+function startOAuth(provider) {
+  return catchAsync(async (req, res) => {
+    assertProvider(provider);
+
+    if (!isConfigured(provider)) {
       return res.status(400).json({
         error: {
           code: 'OAUTH_NOT_CONFIGURED',
-          message: 'Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in backend/.env',
+          message: `Set ${provider.toUpperCase()}_CLIENT_ID and ${provider.toUpperCase()}_CLIENT_SECRET in backend/.env`,
           status: 400,
         },
       });
@@ -129,10 +296,10 @@ router.get(
     const state = crypto.randomBytes(24).toString('hex');
 
     req.session.oauth = {
-      provider: 'google',
+      provider,
       intent,
       state,
-      redirectUri: getRedirectUri(req, 'google'),
+      redirectUri: getRedirectUri(req, provider),
     };
 
     req.session.save((err) => {
@@ -141,99 +308,46 @@ router.get(
           error: { code: 'SESSION_ERROR', message: 'Could not start OAuth flow', status: 500 },
         });
       }
-      return res.redirect(buildGoogleAuthUrl(req, state));
+      return res.redirect(buildAuthUrl(req, provider, state));
     });
-  }),
-);
+  });
+}
 
-router.get(
-  '/github/start',
-  catchAsync(async (req, res) => {
-    if (!isConfigured('github')) {
-      return res.status(400).json({
-        error: {
-          code: 'OAUTH_NOT_CONFIGURED',
-          message: 'Set GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET in backend/.env',
-          status: 400,
-        },
-      });
-    }
-
-    const intent = req.query.intent === 'register' ? 'register' : 'login';
-    const state = crypto.randomBytes(24).toString('hex');
-
-    req.session.oauth = {
-      provider: 'github',
-      intent,
-      state,
-      redirectUri: getRedirectUri(req, 'github'),
-    };
-
-    req.session.save((err) => {
-      if (err) {
-        return res.status(500).json({
-          error: { code: 'SESSION_ERROR', message: 'Could not start OAuth flow', status: 500 },
-        });
-      }
-      return res.redirect(buildGitHubAuthUrl(req, state));
-    });
-  }),
-);
+for (const provider of SUPPORTED_PROVIDERS) {
+  router.get(`/${provider}/start`, startOAuth(provider));
+}
 
 router.get(
   '/callback/:provider',
   catchAsync(async (req, res) => {
     const { provider } = req.params;
-    const { code, state, error, error_description: errorDescription } = req.query;
-    const oauthSession = req.session.oauth;
-
-    if (error) {
-      return redirectWithError(res, errorDescription || error);
+    if (provider === 'apple') {
+      return res.status(405).send('Apple callback must be POST');
     }
 
-    if (!oauthSession || oauthSession.provider !== provider) {
-      return redirectWithError(res, 'OAuth session expired. Please try again.');
-    }
-
-    if (!state || state !== oauthSession.state) {
-      return redirectWithError(res, 'Invalid OAuth state.');
-    }
-
-    if (!code) {
-      return redirectWithError(res, 'Missing authorization code.');
-    }
-
-    let result;
-
-    if (provider === 'google') {
-      const credentials = await exchangeGoogleCode(req, code);
-      result =
-        oauthSession.intent === 'register'
-          ? await signUpWithGoogle(credentials, client)
-          : await signInWithGoogle(credentials, client);
-    } else if (provider === 'github') {
-      const credentials = {
-        code,
-        redirectUri: oauthSession.redirectUri,
-      };
-      result =
-        oauthSession.intent === 'register'
-          ? await signUpWithGitHub(credentials, client)
-          : await signInWithGitHub(credentials, client);
-    } else {
-      return redirectWithError(res, `Unsupported provider: ${provider}`);
-    }
-
-    delete req.session.oauth;
-
-    if (result?.mfaRequired) {
-      persistMfaPending(req, result.mfaPendingToken);
-      return redirectWithMfa(res);
-    }
-
-    persistVoultAuth(req, result);
-    return redirectSuccess(res);
+    await completeOAuth(req, res, provider, {
+      code: req.query.code,
+      state: req.query.state,
+      error: req.query.error,
+      errorDescription: req.query.error_description,
+    });
   }),
 );
+
+router.post(
+  '/callback/apple',
+  catchAsync(async (req, res) => {
+    await completeOAuth(req, res, 'apple', {
+      code: req.body.code,
+      idToken: req.body.id_token,
+      state: req.body.state,
+      user: req.body.user,
+      error: req.body.error,
+      errorDescription: req.body.error_description,
+    });
+  }),
+);
+
+export { SUPPORTED_PROVIDERS, isConfigured, getRedirectUri };
 
 export default router;
