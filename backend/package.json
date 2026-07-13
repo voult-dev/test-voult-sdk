@@ -16,7 +16,7 @@
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "express-session": "^1.19.0",
-    "voult-sdk": "^0.0.3"
+    "voult-sdk": "../voult-sdk"
   },
   "devDependencies": {
     "nodemon": "^3.1.14"
