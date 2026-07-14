@@ -317,10 +317,11 @@ for (const provider of SUPPORTED_PROVIDERS) {
   router.get(`/${provider}/start`, startOAuth(provider));
 }
 
-router.get(
-  '/callback/:provider',
-  catchAsync(async (req, res) => {
-    const { provider } = req.params;
+function handleOAuthCallback(resolveProvider) {
+  return catchAsync(async (req, res) => {
+    const provider =
+      typeof resolveProvider === 'function' ? resolveProvider(req) : resolveProvider;
+
     if (provider === 'apple') {
       return res.status(405).send('Apple callback must be POST');
     }
@@ -331,8 +332,18 @@ router.get(
       error: req.query.error,
       errorDescription: req.query.error_description,
     });
-  }),
-);
+  });
+}
+
+// Canonical callback: /oauth/callback/:provider
+router.get('/callback/:provider', handleOAuthCallback((req) => req.params.provider));
+
+// Common misconfiguration alias: /oauth/:provider/callback
+for (const provider of SUPPORTED_PROVIDERS) {
+  if (provider !== 'apple') {
+    router.get(`/${provider}/callback`, handleOAuthCallback(provider));
+  }
+}
 
 router.post(
   '/callback/apple',

@@ -43,6 +43,12 @@ app.get('/health', (_req, res) => {
 app.use('/api', apiRoutes);
 app.use('/oauth', oauthFlowRoutes);
 
+// Alias for /auth/:provider/callback (another common misconfiguration)
+app.get('/auth/:provider/callback', (req, res) => {
+  const params = new URLSearchParams(req.query);
+  res.redirect(`/oauth/callback/${req.params.provider}?${params.toString()}`);
+});
+
 app.use((_req, res) => {
   res.status(404).json({
     error: { code: 'NOT_FOUND', message: 'Route not found', status: 404 },
