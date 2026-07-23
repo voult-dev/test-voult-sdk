@@ -246,6 +246,11 @@ function formatOAuthError(err) {
   if (typeof details === 'string') return details;
   if (details?.error?.message) return String(details.error.message);
   if (details?.message) return String(details.message);
+
+  if (err?.code && typeof err.code === 'object' && err.code.message) {
+    return String(err.code.message);
+  }
+
   if (typeof err?.code === 'string') return err.code;
 
   return 'OAuth sign-in failed';
