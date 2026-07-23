@@ -237,6 +237,20 @@ function redirectSuccess(res) {
   return res.redirect(`${getFrontendUrl()}/account`);
 }
 
+function formatOAuthError(err) {
+  if (typeof err?.message === 'string' && err.message !== '[object Object]') {
+    return err.message;
+  }
+
+  const details = err?.details;
+  if (typeof details === 'string') return details;
+  if (details?.error?.message) return String(details.error.message);
+  if (details?.message) return String(details.message);
+  if (typeof err?.code === 'string') return err.code;
+
+  return 'OAuth sign-in failed';
+}
+
 async function completeOAuth(req, res, provider, payload) {
   const oauthSession = req.session.oauth;
 
@@ -260,22 +274,28 @@ async function completeOAuth(req, res, provider, payload) {
     return redirectWithError(res, 'Apple did not return an id_token.');
   }
 
-  const credentials = await buildVoultCredentials(req, provider, payload);
-  const handlers = VOULT_HANDLERS[provider];
-  const result =
-    oauthSession.intent === 'register'
-      ? await handlers.register(credentials, client)
-      : await handlers.login(credentials, client);
+  try {
+    const credentials = await buildVoultCredentials(req, provider, payload);
+    const handlers = VOULT_HANDLERS[provider];
+    const result =
+      oauthSession.intent === 'register'
+        ? await handlers.register(credentials, client)
+        : await handlers.login(credentials, client);
 
-  delete req.session.oauth;
+    delete req.session.oauth;
 
-  if (result?.mfaRequired) {
-    persistMfaPending(req, result.mfaPendingToken);
-    return redirectWithMfa(res);
+    if (result?.mfaRequired) {
+      persistMfaPending(req, result.mfaPendingToken);
+      return redirectWithMfa(res);
+    }
+
+    persistVoultAuth(req, result);
+    return redirectSuccess(res);
+  } catch (err) {
+    console.error(`OAuth ${provider} error:`, err);
+    delete req.session.oauth;
+    return redirectWithError(res, formatOAuthError(err));
   }
-
-  persistVoultAuth(req, result);
-  return redirectSuccess(res);
 }
 
 function startOAuth(provider) {
