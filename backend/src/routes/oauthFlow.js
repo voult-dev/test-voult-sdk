@@ -157,6 +157,32 @@ async function exchangeGoogleCode(req, code) {
   return { idToken: data.id_token, accessToken: data.access_token };
 }
 
+async function exchangeGitHubCode(req, code) {
+  const { clientId, clientSecret } = oauthConfig('github');
+  const redirectUri = getRedirectUri(req, 'github');
+
+  const response = await fetch('https://github.com/login/oauth/access_token', {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      client_id: clientId,
+      client_secret: clientSecret,
+      code,
+      redirect_uri: redirectUri,
+    }),
+  });
+
+  const data = await response.json();
+  if (!response.ok || data.error || !data.access_token) {
+    throw new Error(data.error_description || data.error || 'GitHub token exchange failed');
+  }
+
+  return { accessToken: data.access_token };
+}
+
 async function exchangeFacebookCode(req, code) {
   const { clientId, clientSecret } = oauthConfig('facebook');
   const redirectUri = getRedirectUri(req, 'facebook');
@@ -186,7 +212,7 @@ async function buildVoultCredentials(req, provider, payload) {
     case 'google':
       return exchangeGoogleCode(req, payload.code);
     case 'github':
-      return { code: payload.code, redirectUri };
+      return exchangeGitHubCode(req, payload.code);
     case 'facebook':
       return exchangeFacebookCode(req, payload.code);
     case 'linkedin':
