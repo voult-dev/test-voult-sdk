@@ -42,16 +42,22 @@ import {
   deletePasskey,
   signInWithGoogle,
   signUpWithGoogle,
+  authenticateWithGoogle,
   signInWithGitHub,
   signUpWithGitHub,
+  authenticateWithGitHub,
   signInWithFacebook,
   signUpWithFacebook,
+  authenticateWithFacebook,
   signInWithLinkedIn,
   signUpWithLinkedIn,
+  authenticateWithLinkedIn,
   signInWithMicrosoft,
   signUpWithMicrosoft,
+  authenticateWithMicrosoft,
   signInWithApple,
   signUpWithApple,
+  authenticateWithApple,
   linkOAuthProvider,
   getLinkedOAuthProviders,
   unlinkOAuthProvider,
@@ -406,30 +412,48 @@ router.post(
 
 // OAuth providers
 const OAUTH_HANDLERS = {
-  google: { login: signInWithGoogle, register: signUpWithGoogle },
-  github: { login: signInWithGitHub, register: signUpWithGitHub },
-  facebook: { login: signInWithFacebook, register: signUpWithFacebook },
-  linkedin: { login: signInWithLinkedIn, register: signUpWithLinkedIn },
-  microsoft: { login: signInWithMicrosoft, register: signUpWithMicrosoft },
-  apple: { login: signInWithApple, register: signUpWithApple },
+  google: {
+    login: signInWithGoogle,
+    register: signUpWithGoogle,
+    authenticate: authenticateWithGoogle,
+  },
+  github: {
+    login: signInWithGitHub,
+    register: signUpWithGitHub,
+    authenticate: authenticateWithGitHub,
+  },
+  facebook: {
+    login: signInWithFacebook,
+    register: signUpWithFacebook,
+    authenticate: authenticateWithFacebook,
+  },
+  linkedin: {
+    login: signInWithLinkedIn,
+    register: signUpWithLinkedIn,
+    authenticate: authenticateWithLinkedIn,
+  },
+  microsoft: {
+    login: signInWithMicrosoft,
+    register: signUpWithMicrosoft,
+    authenticate: authenticateWithMicrosoft,
+  },
+  apple: {
+    login: signInWithApple,
+    register: signUpWithApple,
+    authenticate: authenticateWithApple,
+  },
 };
 
 for (const provider of Object.keys(OAUTH_HANDLERS)) {
-  router.post(
-    `/auth/${provider}/login`,
-    catchAsync(async (req, res) => {
-      const result = await OAUTH_HANDLERS[provider].login(req.body, client);
-      handleAuthResult(req, res, { ...result, provider });
-    }),
-  );
-
-  router.post(
-    `/auth/${provider}/register`,
-    catchAsync(async (req, res) => {
-      const result = await OAUTH_HANDLERS[provider].register(req.body, client);
-      handleAuthResult(req, res, { ...result, provider });
-    }),
-  );
+  for (const action of ['login', 'register', 'authenticate']) {
+    router.post(
+      `/auth/${provider}/${action}`,
+      catchAsync(async (req, res) => {
+        const result = await OAUTH_HANDLERS[provider][action](req.body, client);
+        handleAuthResult(req, res, { ...result, provider });
+      }),
+    );
+  }
 }
 
 // OAuth linking

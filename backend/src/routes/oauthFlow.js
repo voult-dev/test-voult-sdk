@@ -4,18 +4,12 @@ import client from '../config/client.js';
 import catchAsync from '../utils/catchAsync.js';
 import { persistVoultAuth, persistMfaPending } from '../utils/voultSession.js';
 import {
-  signInWithGoogle,
-  signUpWithGoogle,
-  signInWithGitHub,
-  signUpWithGitHub,
-  signInWithFacebook,
-  signUpWithFacebook,
-  signInWithLinkedIn,
-  signUpWithLinkedIn,
-  signInWithMicrosoft,
-  signUpWithMicrosoft,
-  signInWithApple,
-  signUpWithApple,
+  authenticateWithGoogle,
+  authenticateWithGitHub,
+  authenticateWithFacebook,
+  authenticateWithLinkedIn,
+  authenticateWithMicrosoft,
+  authenticateWithApple,
 } from 'voult-sdk';
 
 const router = Router();
@@ -23,12 +17,12 @@ const router = Router();
 const SUPPORTED_PROVIDERS = ['google', 'github', 'facebook', 'linkedin', 'microsoft', 'apple'];
 
 const VOULT_HANDLERS = {
-  google: { login: signInWithGoogle, register: signUpWithGoogle },
-  github: { login: signInWithGitHub, register: signUpWithGitHub },
-  facebook: { login: signInWithFacebook, register: signUpWithFacebook },
-  linkedin: { login: signInWithLinkedIn, register: signUpWithLinkedIn },
-  microsoft: { login: signInWithMicrosoft, register: signUpWithMicrosoft },
-  apple: { login: signInWithApple, register: signUpWithApple },
+  google: authenticateWithGoogle,
+  github: authenticateWithGitHub,
+  facebook: authenticateWithFacebook,
+  linkedin: authenticateWithLinkedIn,
+  microsoft: authenticateWithMicrosoft,
+  apple: authenticateWithApple,
 };
 
 function getFrontendUrl() {
@@ -40,7 +34,7 @@ function getBackendUrl(req) {
     return process.env.OAUTH_REDIRECT_BASE_URL.replace(/\/$/, '');
   }
   return `${req.protocol}://${req.get('host')}`;
-}
+};
 
 function getRedirectUri(req, provider) {
   const override = process.env[`${provider.toUpperCase()}_REDIRECT_URI`];
@@ -281,11 +275,8 @@ async function completeOAuth(req, res, provider, payload) {
 
   try {
     const credentials = await buildVoultCredentials(req, provider, payload);
-    const handlers = VOULT_HANDLERS[provider];
-    const result =
-      oauthSession.intent === 'register'
-        ? await handlers.register(credentials, client)
-        : await handlers.login(credentials, client);
+    const authenticate = VOULT_HANDLERS[provider];
+    const result = await authenticate(credentials, client);
 
     delete req.session.oauth;
 
@@ -317,12 +308,10 @@ function startOAuth(provider) {
       });
     }
 
-    const intent = req.query.intent === 'register' ? 'register' : 'login';
     const state = crypto.randomBytes(24).toString('hex');
 
     req.session.oauth = {
       provider,
-      intent,
       state,
       redirectUri: getRedirectUri(req, provider),
     };

@@ -29,7 +29,7 @@ export default function OAuthPage() {
   const { refreshSession } = useAuth();
   const { data, error, loading, run, reset } = useApiAction();
   const [config, setConfig] = useState({});
-  const [intent, setIntent] = useState('login');
+  const [intent, setIntent] = useState('authenticate');
   const [provider, setProvider] = useState('google');
   const [manualForm, setManualForm] = useState({});
 
@@ -46,7 +46,7 @@ export default function OAuthPage() {
   const oauthError = searchParams.get('error');
 
   const startOAuth = (selectedProvider) => {
-    window.location.href = `${API_ORIGIN}/oauth/${selectedProvider}/start?intent=${intent}`;
+    window.location.href = `${API_ORIGIN}/oauth/${selectedProvider}/start`;
   };
 
   const submitManual = async (e) => {
@@ -80,25 +80,8 @@ export default function OAuthPage() {
       <section className="form-card">
         <h2>Sign in with provider</h2>
         <p className="endpoint-hint">
-          Redirect flow → callback → POST /api/auth/{'{provider}'}/login|register
+          Redirect flow → callback → POST /api/auth/{'{provider}'}/authenticate (find-or-create)
         </p>
-
-        <div className="tab-row">
-          <button
-            type="button"
-            className={intent === 'login' ? 'tab active' : 'tab'}
-            onClick={() => setIntent('login')}
-          >
-            Login
-          </button>
-          <button
-            type="button"
-            className={intent === 'register' ? 'tab active' : 'tab'}
-            onClick={() => setIntent('register')}
-          >
-            Register
-          </button>
-        </div>
 
         <div className="oauth-buttons">
           {OAUTH_PROVIDERS.map((item) => (
@@ -147,6 +130,30 @@ export default function OAuthPage() {
               {item.id}
             </button>
           ))}
+        </div>
+
+        <div className="tab-row">
+          <button
+            type="button"
+            className={intent === 'authenticate' ? 'tab active' : 'tab'}
+            onClick={() => setIntent('authenticate')}
+          >
+            Authenticate
+          </button>
+          <button
+            type="button"
+            className={intent === 'login' ? 'tab active' : 'tab'}
+            onClick={() => setIntent('login')}
+          >
+            Login
+          </button>
+          <button
+            type="button"
+            className={intent === 'register' ? 'tab active' : 'tab'}
+            onClick={() => setIntent('register')}
+          >
+            Register
+          </button>
         </div>
 
         <form onSubmit={submitManual}>
