@@ -3,6 +3,7 @@ import crypto from 'crypto';
 import client from '../config/client.js';
 import catchAsync from '../utils/catchAsync.js';
 import { persistVoultAuth, persistMfaPending } from '../utils/voultSession.js';
+import { getFrontendUrl } from '../utils/appBaseUrl.js';
 import {
   authenticateWithGoogle,
   authenticateWithGitHub,
@@ -24,10 +25,6 @@ const VOULT_HANDLERS = {
   microsoft: authenticateWithMicrosoft,
   apple: authenticateWithApple,
 };
-
-function getFrontendUrl() {
-  return (process.env.APP_BASE_URL || 'http://localhost:5173').replace(/\/$/, '');
-}
 
 function getBackendUrl(req) {
   if (process.env.OAUTH_REDIRECT_BASE_URL) {

@@ -7,7 +7,7 @@ import {
   clearVoultAuth,
   persistMfaPending,
 } from '../utils/voultSession.js';
-import { getAppBaseUrl } from '../utils/appBaseUrl.js';
+import { getFrontendUrl } from '../utils/appBaseUrl.js';
 import {
   signUpWithEmailAndPassword,
   signUpWithUsernameAndPassword,
@@ -393,9 +393,7 @@ router.post(
   '/send-magic-link',
   catchAsync(async (req, res) => {
     const { email, redirectUri } = req.body;
-    const uri =
-      redirectUri?.trim() ||
-      `${getAppBaseUrl(req).replace(':2000', ':5173')}/magic-callback`;
+    const uri = redirectUri?.trim() || `${getFrontendUrl()}/magic-callback`;
     const result = await signInWithEmailLink(email, { redirectUri: uri }, client);
     res.json({ ...result, redirectUriUsed: uri });
   }),

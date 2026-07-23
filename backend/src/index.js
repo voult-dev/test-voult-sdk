@@ -12,9 +12,10 @@ const app = express();
 const PORT = Number(process.env.PORT || process.env.port || 2000);
 
 const allowedOrigins = [
+  process.env.FRONTEND_URL,
   process.env.APP_BASE_URL,
   'http://localhost:5173',
-  'http://localhost:3000',
+  'http://localhost:2000',
   'http://127.0.0.1:5173',
 ].filter(Boolean);
 
