@@ -205,6 +205,32 @@ async function exchangeFacebookCode(req, code) {
   return { accessToken: data.access_token };
 }
 
+async function exchangeLinkedInCode(req, code) {
+  const { clientId, clientSecret } = oauthConfig('linkedin');
+  const redirectUri = getRedirectUri(req, 'linkedin');
+
+  const response = await fetch('https://www.linkedin.com/oauth/v2/accessToken', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
+      grant_type: 'authorization_code',
+      code,
+      redirect_uri: redirectUri,
+      client_id: clientId,
+      client_secret: clientSecret,
+    }),
+  });
+
+  const data = await response.json();
+  if (!response.ok || !data.access_token) {
+    throw new Error(
+      data.error_description || data.error || 'LinkedIn token exchange failed',
+    );
+  }
+
+  return { accessToken: data.access_token };
+}
+
 async function buildVoultCredentials(req, provider, payload) {
   const redirectUri = getRedirectUri(req, provider);
 
@@ -216,6 +242,7 @@ async function buildVoultCredentials(req, provider, payload) {
     case 'facebook':
       return exchangeFacebookCode(req, payload.code);
     case 'linkedin':
+      return exchangeLinkedInCode(req, payload.code);
     case 'microsoft':
       return { code: payload.code };
     case 'apple': {
