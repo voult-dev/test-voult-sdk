@@ -1,0 +1,8 @@
+# Dependency directories
+node_modules/
+jspm_packages/
+
+# Environment variables and secrets
+.env
+.env.*.local
+.env.local
