@@ -38,7 +38,7 @@ export default function Layout() {
     <div className="app-shell">
       <aside className="sidebar">
         <div className="brand">
-          <span className="brand-mark">V</span>
+          <img className="brand-mark" src="/images/favicon.png" alt="voult.dev" />
           <div>
             <strong>voult.dev</strong>
             <p>Auth playground</p>

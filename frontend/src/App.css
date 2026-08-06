@@ -27,10 +27,8 @@
   width: 2.5rem;
   height: 2.5rem;
   border-radius: 0.75rem;
-  display: grid;
-  place-items: center;
-  background: linear-gradient(135deg, #6366f1, #10b981);
-  font-weight: 700;
+  display: block;
+  object-fit: cover;
 }
 
 .brand p,
