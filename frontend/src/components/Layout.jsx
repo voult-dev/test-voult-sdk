@@ -2,23 +2,13 @@ import { useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { api } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
-
-const navItems = [
-  { to: '/', label: 'Home' },
-  { to: '/signup', label: 'Sign up' },
-  { to: '/signin', label: 'Sign in' },
-  { to: '/mfa', label: 'MFA' },
-  { to: '/passkeys', label: 'Passkeys' },
-  { to: '/magic-link', label: 'Magic link' },
-  { to: '/oauth', label: 'OAuth' },
-  { to: '/account', label: 'Account' },
-  { to: '/sessions', label: 'Sessions' },
-  { to: '/utilities', label: 'Utilities' },
-];
+import { navItems, isNavItemEnabled } from '../lib/navAccess';
+import RouteAccess from './RouteAccess';
 
 export default function Layout() {
   const navigate = useNavigate();
-  const { authenticated, user, mfaPending, loading, refreshSession } = useAuth();
+  const authState = useAuth();
+  const { authenticated, user, mfaPending, loading, refreshSession } = authState;
   const [loggingOut, setLoggingOut] = useState(false);
 
   const logout = async () => {
@@ -46,16 +36,37 @@ export default function Layout() {
         </div>
 
         <nav className="nav">
-          {navItems.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              end={item.to === '/'}
-              className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
-            >
-              {item.label}
-            </NavLink>
-          ))}
+          {navItems.map((item) => {
+            const enabled = isNavItemEnabled(item, authState);
+
+            if (!enabled) {
+              return (
+                <span
+                  key={item.to}
+                  className="nav-link disabled"
+                  aria-disabled="true"
+                  title={
+                    item.access === 'guest'
+                      ? 'Sign out to use this flow'
+                      : 'Sign in to use this feature'
+                  }
+                >
+                  {item.label}
+                </span>
+              );
+            }
+
+            return (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                end={item.to === '/'}
+                className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
+              >
+                {item.label}
+              </NavLink>
+            );
+          })}
         </nav>
 
         <div className="session-card">
@@ -64,7 +75,7 @@ export default function Layout() {
             <p className="session-muted">Checking…</p>
           ) : authenticated ? (
             <>
-              <p className="session-user">{user?.email || user?.username || user?.id}</p>
+              <p className="session-user">{user?.email || user?.username || user?.name}</p>
               <span className="badge badge-ok">Authenticated</span>
               <button
                 type="button"
@@ -84,7 +95,9 @@ export default function Layout() {
       </aside>
 
       <main className="main">
-        <Outlet />
+        <RouteAccess>
+          <Outlet />
+        </RouteAccess>
       </main>
     </div>
   );

@@ -1,4 +1,5 @@
 import client from '../config/client.js';
+import { sanitizeUserProfile } from '../utils/sanitizeResponse.js';
 
 export default function syncVoultClient(req, res, next) {
   const v = req.session?.voult;
@@ -21,7 +22,7 @@ export default function syncVoultClient(req, res, next) {
       const sessionToken = req.session.voult?.accessToken;
       if (client.accessToken !== sessionToken) {
         req.session.voult = {
-          user: client.getCurrentUser(),
+          user: sanitizeUserProfile(client.getCurrentUser()),
           accessToken: client.accessToken,
           refreshToken: client.refreshToken,
         };

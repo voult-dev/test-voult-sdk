@@ -1,3 +1,5 @@
+import { sanitizeUserProfile } from './sanitizeResponse.js';
+
 export function persistVoultAuth(req, result) {
   if (!result || !req.session) return;
 
@@ -5,7 +7,7 @@ export function persistVoultAuth(req, result) {
   if (!accessToken) return;
 
   req.session.voult = {
-    user: result.user || null,
+    user: sanitizeUserProfile(result.user || null),
     accessToken,
     refreshToken: result.refreshToken || null,
   };

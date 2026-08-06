@@ -8,6 +8,7 @@ import {
   persistMfaPending,
 } from '../utils/voultSession.js';
 import { getFrontendUrl } from '../utils/appBaseUrl.js';
+import { sendSanitizedGet, sanitizeUserProfile } from '../utils/sanitizeResponse.js';
 import {
   signUpWithEmailAndPassword,
   signUpWithUsernameAndPassword,
@@ -85,9 +86,8 @@ function handleAuthResult(req, res, result) {
 router.get(
   '/auth/session',
   catchAsync(async (req, res) => {
-    const authenticated = Boolean(req.session?.voult?.accessToken);
-    res.json({
-      authenticated,
+    sendSanitizedGet(res, 'auth/session', {
+      authenticated: Boolean(req.session?.voult?.accessToken),
       user: req.session?.voult?.user || null,
       mfaPending: Boolean(req.session?.mfaPendingToken),
     });
@@ -168,7 +168,7 @@ router.get(
   requireAuth,
   catchAsync(async (_req, res) => {
     const result = await getMfaStatus(client);
-    res.json(result);
+    sendSanitizedGet(res, 'auth/mfa/status', result);
   }),
 );
 
@@ -216,7 +216,7 @@ router.get(
   '/auth/webauthn/compatibility',
   catchAsync(async (_req, res) => {
     const result = await getWebAuthnCompatibility(client);
-    res.json(result);
+    sendSanitizedGet(res, 'auth/webauthn/compatibility', result);
   }),
 );
 
@@ -263,7 +263,7 @@ router.get(
   requireAuth,
   catchAsync(async (_req, res) => {
     const result = await listPasskeys(client);
-    res.json(result);
+    sendSanitizedGet(res, 'auth/webauthn/credentials', result);
   }),
 );
 
@@ -292,7 +292,7 @@ router.get(
   requireAuth,
   catchAsync(async (_req, res) => {
     const result = await listSessions(client);
-    res.json(result);
+    sendSanitizedGet(res, 'sessions', result);
   }),
 );
 
@@ -325,7 +325,7 @@ router.get(
   requireAuth,
   catchAsync(async (_req, res) => {
     const profile = await getCurrentUser(client);
-    res.json(profile);
+    sendSanitizedGet(res, 'user/me', profile);
   }),
 );
 
@@ -336,7 +336,7 @@ router.patch(
     const { fullName } = req.body;
     const result = await updateProfile({ fullName }, client);
     if (client.getCurrentUser()) {
-      req.session.voult.user = client.getCurrentUser();
+      req.session.voult.user = sanitizeUserProfile(client.getCurrentUser());
     }
     res.json(result);
   }),
@@ -469,7 +469,7 @@ router.get(
   requireAuth,
   catchAsync(async (_req, res) => {
     const result = await getLinkedOAuthProviders(client);
-    res.json(result);
+    sendSanitizedGet(res, 'me/oauth-accounts', result);
   }),
 );
 
@@ -498,7 +498,7 @@ router.get(
   requireAuth,
   catchAsync(async (_req, res) => {
     const result = await client.get('/api/audit-logs/me', { requireAuth: true });
-    res.json(result);
+    sendSanitizedGet(res, 'audit-logs/me', result);
   }),
 );
 
@@ -507,7 +507,7 @@ router.get(
   '/provider-visibility',
   catchAsync(async (_req, res) => {
     const result = await client.get(`/api/provider-visibility/${client.clientId}`);
-    res.json(result);
+    sendSanitizedGet(res, 'provider-visibility', result);
   }),
 );
 

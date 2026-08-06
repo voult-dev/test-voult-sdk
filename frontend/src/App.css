@@ -59,6 +59,17 @@
   color: #fff;
 }
 
+.nav-link.disabled {
+  opacity: 0.38;
+  cursor: not-allowed;
+  color: #6b7280;
+}
+
+.page-loading {
+  color: #9aa0a6;
+  padding: 1rem 0;
+}
+
 .session-card {
   margin-top: auto;
   padding: 0.875rem;
