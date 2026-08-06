@@ -75,10 +75,11 @@ export default function MfaPage() {
             />
           </label>
           <label>
-            TOTP or backup code
+            TOTP (6 digits) or backup code (8 characters)
             <input
               value={verifyForm.mfaToken}
               onChange={(e) => setVerifyForm((f) => ({ ...f, mfaToken: e.target.value }))}
+              placeholder="123456 or A1B2C3D4"
               required
             />
           </label>
@@ -136,19 +137,25 @@ export default function MfaPage() {
       <section className="form-card">
         <h2>Disable MFA</h2>
         <p className="endpoint-hint">POST /api/auth/mfa/disable</p>
+        <p className="hint">
+          Email/password accounts need your password plus a TOTP or backup code.
+          OAuth-only accounts can leave password blank and use TOTP or a backup code only.
+        </p>
         <form onSubmit={disableMfa}>
           <PasswordField
-            label="Password"
+            label="Password (optional for OAuth-only accounts)"
             name="password"
             value={disableForm.password}
             onChange={(e) => setDisableForm((f) => ({ ...f, password: e.target.value }))}
             showHint={false}
+            required={false}
           />
           <label>
-            TOTP / backup code
+            TOTP (6 digits) or backup code (8 characters)
             <input
               value={disableForm.mfaToken}
               onChange={(e) => setDisableForm((f) => ({ ...f, mfaToken: e.target.value }))}
+              placeholder="123456 or A1B2C3D4"
               required
             />
           </label>
