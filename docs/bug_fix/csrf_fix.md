@@ -53,6 +53,13 @@ Apply the same change to these endpoints in `voult/routes/api/auth.js`:
 - `/username-login`
 - `/logout`
 
+Also remove route-level `csrfProtection` from SDK-facing account routes in:
+- `voult/routes/api/user.js` (`/forgot-password`, `/reset-password`, `/disable`, `/reenable`, `PATCH /me`)
+- `voult/routes/api/oauthLinking.js` (`/oauth/:provider/link`, `/me/oauth-accounts/:provider`, `/me/set-password`)
+- `voult/routes/api/oauth.js` (`POST /:provider/authorize`)
+
+Global CSRF in `voult/src/index.js` already skips `/api` paths; remaining CSRF failures were from per-route middleware on these endpoints.
+
 ### Option 2: Create a CSRF-less API Sub-router
 
 If certain API endpoints still need CSRF protection, create a separate sub-router for public auth endpoints that bypasses CSRF, and only apply `csrfProtection` to stateful API routes that require an existing user session.
