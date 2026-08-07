@@ -8,7 +8,7 @@ import {
   persistMfaPending,
 } from '../utils/voultSession.js';
 import { getFrontendUrl } from '../utils/appBaseUrl.js';
-import { sendSanitizedGet, sanitizeUserProfile } from '../utils/sanitizeResponse.js';
+import { sendSanitizedGet, sanitizeUserProfile, sendSanitizedJson } from '../utils/sanitizeResponse.js';
 import {
   signUpWithEmailAndPassword,
   signUpWithUsernameAndPassword,
@@ -79,7 +79,7 @@ function handleAuthResult(req, res, result) {
   }
 
   persistVoultAuth(req, result);
-  return res.json(result);
+  return sendSanitizedJson(res, result);
 }
 
 // Session status
@@ -338,7 +338,7 @@ router.patch(
     if (client.getCurrentUser()) {
       req.session.voult.user = sanitizeUserProfile(client.getCurrentUser());
     }
-    res.json(result);
+    sendSanitizedJson(res, result);
   }),
 );
 

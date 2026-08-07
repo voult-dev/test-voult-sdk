@@ -15,7 +15,7 @@ describe('persistVoultAuth', () => {
     });
 
     expect(req.session.voult).toEqual({
-      user: { id: 'u1', email: 'a@b.com' },
+      user: { email: 'a@b.com' },
       accessToken: 'access',
       refreshToken: 'refresh',
     });

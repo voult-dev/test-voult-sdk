@@ -23,6 +23,7 @@ const SENSITIVE_KEYS = new Set([
   'refreshToken',
   'accessToken',
   'mfaPendingToken',
+  'isEmailVerified',
 ]);
 
 const USER_PROFILE_KEYS = new Set([
@@ -30,7 +31,6 @@ const USER_PROFILE_KEYS = new Set([
   'username',
   'fullName',
   'name',
-  'isEmailVerified',
   'createdAt',
   'updatedAt',
   'failedLoginAttempts',
@@ -113,6 +113,24 @@ export function sanitizeUserProfile(user) {
   return profile;
 }
 
+/** Sanitize any API payload that may embed a user profile (POST/PATCH auth & account). */
+export function sanitizeResponseWithUser(payload) {
+  if (!isPlainObject(payload)) return payload;
+
+  const sanitized = { ...payload };
+  if ('user' in sanitized) {
+    sanitized.user = sanitizeUserProfile(sanitized.user);
+  }
+
+  for (const key of SENSITIVE_KEYS) {
+    if (key in sanitized && key !== 'accessToken' && key !== 'refreshToken' && key !== 'mfaPendingToken') {
+      delete sanitized[key];
+    }
+  }
+
+  return sanitized;
+}
+
 export function sanitizeAuditLogs(payload) {
   if (!isPlainObject(payload)) return payload;
 
@@ -193,4 +211,8 @@ export function sanitizeGetResponse(routeKey, payload) {
 
 export function sendSanitizedGet(res, routeKey, payload) {
   res.json(sanitizeGetResponse(routeKey, payload));
+}
+
+export function sendSanitizedJson(res, payload) {
+  res.json(sanitizeResponseWithUser(payload));
 }

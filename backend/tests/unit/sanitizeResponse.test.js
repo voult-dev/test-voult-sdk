@@ -3,6 +3,7 @@ import {
   sanitizeUserProfile,
   sanitizeAuditLogs,
   sanitizeGetResponse,
+  sanitizeResponseWithUser,
 } from '../../src/utils/sanitizeResponse.js';
 
 describe('sanitizeUserProfile', () => {
@@ -23,10 +24,10 @@ describe('sanitizeUserProfile', () => {
       email: 'dev@example.com',
       fullName: 'Dev User',
       name: 'Dev User',
-      isEmailVerified: true,
       createdAt: '2024-01-01T00:00:00.000Z',
     });
     expect(profile.id).toBeUndefined();
+    expect(profile.isEmailVerified).toBeUndefined();
   });
 });
 
@@ -76,6 +77,33 @@ describe('sanitizeGetResponse', () => {
       authenticated: true,
       mfaPending: false,
       user: { email: 'a@b.com' },
+    });
+  });
+});
+
+describe('sanitizeResponseWithUser', () => {
+  it('sanitizes profile update payloads with embedded user', () => {
+    expect(
+      sanitizeResponseWithUser({
+        success: true,
+        message: 'Profile updated successfully',
+        user: {
+          id: 'user_123',
+          email: 'dev@example.com',
+          app: 'app_secret',
+          authProvider: 'email',
+          fullName: 'New Name',
+          passwordHash: 'hidden',
+        },
+      }),
+    ).toEqual({
+      success: true,
+      message: 'Profile updated successfully',
+      user: {
+        email: 'dev@example.com',
+        fullName: 'New Name',
+        name: 'New Name',
+      },
     });
   });
 });
