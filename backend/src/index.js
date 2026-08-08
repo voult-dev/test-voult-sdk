@@ -2,8 +2,9 @@ import './loadEnv.js';
 import createApp from './app.js';
 
 const app = createApp();
-const PORT = Number(process.env.PORT || process.env.port || 2000);
+
+const PORT= process.env.PORT;
 
 app.listen(PORT, () => {
-  console.log(`Voult playground BFF running on http://localhost:${PORT}`);
+  console.log(`Voult playground Backend is running on http://localhost:${PORT}`);
 });
